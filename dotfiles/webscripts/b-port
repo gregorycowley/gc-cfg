@@ -1,0 +1,36 @@
+#!/bin/bash
+
+host="127.0.0.1"
+usage="
+b-port [-h] port [host]
+-h    this help
+port  port number to check
+host  host name to check (defaults to $host)
+"
+
+while getopts ":h" opt; do
+  case "$opt" in
+    h) echo "$usage"; exit;;
+  esac
+done
+
+shift $(( $OPTIND - 1 ))
+port="${1:-}"
+if ! [[ $port ]]; then
+  echo "port is required" >&2
+  exit 1
+fi
+if [[ "${2:-}" ]]; then
+  host="$2"
+fi
+
+# http://stackoverflow.com/questions/9609130/quick-way-to-find-if-a-port-is-open-on-linux
+exit_status=0
+if exec 6<>/dev/tcp/$host/$port; then
+  echo "port is used"
+  exit_status=1
+fi
+exec 6>&- # close output connection
+exec 6<&- # close input connection
+
+exit $exit_status

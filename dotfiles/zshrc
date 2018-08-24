@@ -1,0 +1,43 @@
+# Gregory ZSH config
+# Initialize the environment
+
+ZSH_ROOT="$HOME/.cfg"
+ZSH_THEME="robbyrussell"
+
+plugins=(
+  git 
+  osx
+)
+
+export ZSH_HIGHLIGHT_HIGHLIGHTERS_DIR=/usr/local/share/zsh-syntax-highlighting/highlighters
+export SSH_KEY_PATH="~/.ssh/rsa_id"
+export ZSH=/Users/gregorycowley/.oh-my-zsh
+# export JAVA_HOME=`/usr/libexec/java_home -v 1.8`
+# export JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.8.0_171.jdk/Contents/Home"
+# export PATH=$JAVA_HOME/bin:$PATH
+# export PATH="$HOME/.jenv/bin:$PATH"
+export EDITOR='vim'
+export NVM_DIR="$HOME/.nvm"
+  . "/usr/local/opt/nvm/nvm.sh"
+
+PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
+
+source $ZSH/oh-my-zsh.sh
+source "/usr/local/opt/zsh-git-prompt/zshrc.sh"
+# source "/usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+# source /usr/local/share/zsh-navigation-tools/zsh-navigation-tools.plugin.zsh
+# source /usr/local/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+compctl -g '~/.itermocil/*(:t:r)' itermocil
+
+alias st="open -a Sublime\ Text"
+alias stz="open -a Sublime\ Text ~/.zshrc"
+alias config='/usr/bin/git --git-dir=/Users/gregorycowley/.cfg/ --work-tree=/Users/gregorycowley'
+
+# eval "$(jenv init -)"
+
+# source ~/.my_custom_commands.sh
+#alias mux="tmuxinator"
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+fpath=(/usr/local/share/zsh-completions /Users/gregorycowley/.oh-my-zsh/plugins/git /Users/gregorycowley/.oh-my-zsh/functions /Users/gregorycowley/.oh-my-zsh/completions /Users/gregorycowley/.oh-my-zsh/plugins/git /Users/gregorycowley/.oh-my-zsh/functions /Users/gregorycowley/.oh-my-zsh/completions /usr/local/share/zsh/site-functions /usr/local/Cellar/zsh/5.5.1/share/zsh/functions)
+. /usr/local/etc/profile.d/z.sh

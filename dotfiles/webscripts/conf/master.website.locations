@@ -1,0 +1,3 @@
+location @website {
+  try_files /failing-fail-face = @adhoc;
+}

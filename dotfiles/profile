@@ -1,0 +1,26 @@
+# JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-9.0.1.jdk/Contents/Home
+
+# export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_162.jdk/Contents/Home
+
+SSLKEYLOGFILE="/Users/gcowley/sec-premaster.txt"
+export SSLKEYLOGFILE
+
+# export PATH=$JAVA_HOME/bin:$PATH
+
+export DEBUG="express:*"
+
+export HOMEBREW_GITHUB_API_TOKEN="d889f9991129148c1d1c784362aecd04ac58f25f"
+
+# export PATH="/usr/local/opt/python/libexec/bin:$PATH"
+
+## alias gam="/Users/gcowley/bin/gam/gam"
+# if which jenv > /dev/null; then eval "$(jenv init -)"; fi
+
+# export NVM_DIR="$HOME/.nvm"
+# [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
+
+# export NVM_DIR="$HOME/.nvm"
+#  . "/usr/local/opt/nvm/nvm.sh"
+
+# export NODE_PATH="/Users/gcowley/.nvm/versions/node/v8.10.0/bin/node"
+

@@ -1,0 +1,7 @@
+# function git_dirty {
+  if [[ -n $(git status -s --ignore-submodules=dirty 2> /dev/null) ]]; then
+    echo "*"
+  else
+    echo ""
+  fi
+# }

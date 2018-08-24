@@ -1,0 +1,25 @@
+## My magical git function ##
+# Adds various checks to `git` as detailed below:
+#  * Changes `git rebase .` into `git rebase origin/$current_branch`
+# function git {
+  # CONTINUE=true
+
+  # # git rebase
+  # if [[ "$1" == "rebase" ]]; then
+  #   # Double check if we're trying to rebase "."
+  #   if [[ "$2" == "." ]]; then
+  #     # Don't run "git rebase ."
+  #     CONTINUE=false
+
+  #     # Run our actual git rebase
+  #     command git rebase origin/$(git current-branch)
+  #   fi
+  # fi
+
+  # # Run the command if we've been told to.
+  # # The default is to run the command so this
+  # # fires unless a check has disabled it.
+  # if [[ $CONTINUE == true ]]; then
+  #   command git $*
+  # fi
+# }

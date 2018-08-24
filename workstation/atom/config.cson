@@ -1,0 +1,105 @@
+"*":
+  Hydrogen:
+    debug: true
+  "atom-package-deps":
+    ignored: []
+  core:
+    audioBeep: false
+    closeDeletedFileTabs: true
+    closeEmptyWindows: false
+    destroyEmptyPanes: false
+    disabledPackages: [
+      "tabs-to-spaces"
+      "language-cfml"
+      "synced-sidebar"
+      "linter-rubocop"
+      "linter-rubocop"
+      "trailing-spaces"
+    ]
+    excludeVcsIgnoredPaths: false
+    ignoredNames: [
+      ".git"
+      ".hg"
+      ".svn"
+      ".DS_Store"
+      "._*"
+      "Thumbs.db"
+      "desktop.ini"
+      ".pioenvs"
+      ".piolibdeps"
+      ".clang_complete"
+      ".gcc-flags.json"
+    ]
+    packagesWithKeymapsDisabled: [
+      "git-plus"
+    ]
+    telemetryConsent: "no"
+    themes: [
+      "atom-dark-ui"
+      "base16-tomorrow-dark-theme"
+    ]
+    titleBar: "custom"
+  editor:
+    fontSize: 15
+    scrollPastEnd: true
+  "exception-reporting":
+    userId: "d9f8a28e-3694-e767-4e3e-180303f43226"
+  "git-plus":
+    commits:
+      verboseCommits: true
+  "glowing-cursor":
+    cursorWidth: 5
+    glowColor: "#ff2739"
+    glowDistance: 2
+    innerColor: "#ff2739"
+  linter:
+    statusBar: "Show all errors"
+  "linter-js-yaml": {}
+  "linter-jshint": {}
+  "linter-rubocop": {}
+  "linter-ui-default":
+    panelHeight: 81
+  "markdown-preview":
+    useGitHubStyle: true
+  "package-sync":
+    forceOverwrite: true
+  "platformio-ide-terminal":
+    style:
+      theme: "solarized-dark"
+  "prettier-atom":
+    formatOnSaveOptions: {}
+    useEslint: true
+  "pull-requests":
+    githubAuthorizationToken: "5e27608888137de47e4c2dff07f69f47a551cac3"
+  "split-diff":
+    diffWords: true
+    ignoreWhitespace: true
+    leftEditorColor: "red"
+    rightEditorColor: "green"
+    scrollSyncType: "Vertical + Horizontal"
+  "tool-bar":
+    position: "Left"
+    visible: false
+  "tree-view":
+    autoReveal: true
+    focusOnReveal: false
+    hideIgnoredNames: true
+    hideVcsIgnoredFiles: true
+  welcome:
+    showOnStartup: false
+  whitespace:
+    removeTrailingWhitespace: true
+".diff.source":
+  editor:
+    showInvisibles: true
+".haml.text":
+  editor:
+    preferredLineLength: 130
+".hamlc.text":
+  editor:
+    preferredLineLength: 130
+".slim.text":
+  editor:
+    preferredLineLength: 130
+"linter-rubocop":
+  executablePath: "/Users/chrishough/.rbenv/versions/2.3.3/bin/rubocop"

@@ -1,0 +1,72 @@
+#!/bin/bash
+current_dir=$(cd `dirname ${BASH_SOURCE[0]}`; pwd)
+DEV_ROOT=$(cd "$current_dir/.."; pwd)
+
+share_name="buildkit-dist-assets"
+default_path_to_blurby=$(cd "$DEV_ROOT/blurby"; pwd)
+default_path_to_buildkit=$(cd "$DEV_ROOT/blurb-buildkit"; pwd)
+
+usage="
+blurby-link-buildkit [-h][-r][-b <path_to_blurby>][-k <path_to_buildkit>]
+  -h - this help
+  -r - revert link
+  -b - path_to_blurby - defaults to $default_path_to_blurby
+  -k - path_to_buildkit - defaults to $default_path_to_buildkit
+
+This links the build/dist/assets folder to blurby's public/components/buildkit/assets folder
+  that way you can run blurby with a non fully compiled js file
+"
+
+revert=
+path_to_blurby=$default_path_to_blurby
+path_to_buildkit=$default_path_to_buildkit
+while getopts ":hrb:k:" opt; do
+  case "$opt" in
+    h) echo "$usage"; exit;;
+    r) revert=true;;
+    b) path_to_blurby="$OPTARG";;
+    k) path_to_buildkit="$OPTARG";;
+  esac
+done
+
+
+# This is all done in the blurby repo because that's how vagrant works
+cd $path_to_blurby
+
+vm_name="$($current_dir/blurby-vm-name)"
+
+echo "reverting mounted folder..."
+vagrant ssh -c "
+cd /vagrant/public/components/buildkit
+sudo umount assets >/dev/null 2>/dev/null
+if [[ -d assets.old ]]; then
+  rmdir assets
+  mv assets.old assets
+fi
+" 2>/dev/null # this gets rid of the "Connection to 127.0.0.1 closed"
+
+echo "removing share..."
+if VBoxManage showvminfo "$vm_name" | grep "$share_name" >/dev/null; then
+  VBoxManage sharedfolder remove "$vm_name" \
+    --name "$share_name" \
+    --transient
+fi
+
+# if i'm only reverting, i stop here
+if [[ "$revert" ]]; then
+  exit
+fi
+
+echo "adding share..."
+VBoxManage sharedfolder add "$vm_name" \
+  --name $share_name \
+  --hostpath "$path_to_buildkit/build/dist/assets"\
+  --transient
+
+echo "linking to shared folder..."
+vagrant ssh -c "
+cd /vagrant/public/components/buildkit
+mv assets assets.old
+mkdir assets
+sudo mount -t vboxsf \"$share_name\" assets
+" 2>/dev/null

@@ -1,0 +1,3 @@
+location @adhoc {
+  proxy_pass http://master.eng.blurb.com;
+}

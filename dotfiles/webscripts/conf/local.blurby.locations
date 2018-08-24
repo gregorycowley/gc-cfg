@@ -1,0 +1,6 @@
+location ~ ^/(my|components|stylesheets|images|javascripts|bookshow|bookstore|fonts|api)/? {
+    proxy_set_header Accept-Encoding ""; # to uncompress responses so subs_filter works
+    proxy_set_header Host $http_host;
+    proxy_set_header Connection close;
+    proxy_pass http://127.0.0.1:$blurby_port;
+}

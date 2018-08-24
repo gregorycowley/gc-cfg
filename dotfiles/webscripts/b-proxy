@@ -1,0 +1,433 @@
+#!/bin/bash
+current_dir="$(cd `dirname ${BASH_SOURCE[0]}`; pwd)"
+DEV_ROOT="$(cd $current_dir; cd ..; pwd)"
+
+nginx_path="/usr/local/bin/nginx"
+nginx_root_path="$(cd $(dirname $nginx_path); cd $(dirname $(readlink $nginx_path)); cd ..; pwd)"
+nginx_bin="$nginx_root_path/bin/nginx"
+
+config_path="$current_dir/conf/nginx.conf"
+
+# This lets me do thing relative to the dev root, like show the local build artifacts for buildkit
+#  everywhere. I'll probably also set some other ones based on environment flags or something
+#  but for now...everything.
+devroot_directive="
+map \"devroot\" \$dev_root {
+    default \"$DEV_ROOT\";
+}
+"
+
+user_directive="
+user $(whoami) $(id -n -g $(whoami));
+"
+
+function _fw {
+  /usr/libexec/ApplicationFirewall/socketfilterfw --add "$nginx_bin"
+}
+function _start {
+  _build_includes
+  sudo $nginx_bin -c "$config_path"
+}
+function _stop {
+  sudo $nginx_bin -c "$config_path" -s stop
+}
+function _restart {
+  _build_includes
+  sudo $nginx_bin -c "$config_path" -s reload
+}
+function _log {
+  tail -F "/usr/local/var/log/nginx/access.log" "/usr/local/var/log/nginx/error.log"
+}
+
+function _conf_private_set {
+  local name="$1"
+  local value="$2"
+
+  if ! [[ -e "$profile_vars_file_path" ]]; then
+    touch "$profile_vars_file_path";
+  fi
+  _conf_private_validate "$name"
+
+  new_conf=""
+  while read -r line; do
+    if ! [[ "$line" ]]; then continue; fi
+    if [[ "$line" =~ ^# ]]; then continue; fi
+    service_name="${line%=*}"
+    service_value="${line#*=}"
+    if [[ "$service_name" = "$name" ]]; then continue; fi
+    new_conf="${newline}${service_name}=${service_value}"
+  done <<< "$(cat $profile_vars_file_path)"
+  if [[ "$value" ]]; then
+    new_conf+="${newline}${name}=${value}"
+  fi
+  new_conf="${new_conf#$newline}"
+  echo "$new_conf" > "$profile_vars_file_path"
+}
+function _conf_private_validate {
+  local name="$1"
+  name_is_valid=
+  while read -r line; do
+    if ! [[ "$line" ]]; then continue; fi
+    if [[ "$line" =~ ^# ]]; then continue; fi
+    service_name="${line%=*}"
+    service_value="${line#*=}"
+    if [[ "$name" = "$service_name" ]]; then
+      name_is_valid=true
+    fi
+  done <<< "$(cat "$vars_file_path")"
+
+  if ! [[ $name_is_valid ]]; then
+    echo "${name} is not a valid key" >&2
+    exit 1
+  fi
+}
+function _conf {
+  _set_combined_config
+  local cmd=${1:-get}
+  local name=${2:-}
+  local value=
+  if [[ "$name" =~ = ]]; then
+    value="${name/*=}"
+    name="${name/=*}"
+  fi
+
+  local service_name;
+  local service_value;
+  local line;
+  local new_conf;
+  local name_is_valid;
+
+  case "$cmd" in
+    unset|u)
+      if [[ "$name" ]]; then
+        _conf_private_set "$name" ""
+        return
+      fi
+      while read -r line; do
+        if ! [[ "$line" ]]; then continue; fi
+        if [[ "$line" =~ ^# ]]; then continue; fi
+        service_name="${line%=*}"
+        _conf_private_set "$service_name" ""
+      done <<< "$(cat "$vars_file_path")"
+    ;;
+    set|s)
+      if [[ -z "$value" ]]; then
+        echo "value is required" >&2
+        exit 1
+      fi
+      echo "setting ${name}=${value}"
+      _conf_private_set "$name" "$value"
+    ;;
+    get|g)
+      while read -r line; do
+        service_name="${line%=*}"
+        service_value="${line#*=}"
+        if [[ "$name" ]] && ! [[ "$name" = "$service_name" ]]; then
+          continue
+        fi
+        echo "$line"
+      done <<< "$_combined_config"
+    ;;
+    *) echo "$cmd is not a valid conf cmd" >&2; exit 1;;
+  esac
+}
+function _build_jekyll {
+  local repo_name="$1"
+  local repo_service_name="$repo_name"
+  if [[ "$repo_service_name" = "ad-hoc" ]]; then
+    repo_service_name="adhoc"
+  fi
+  local server_port="$2"
+  local path_to_dest="$3"
+  local use_port=
+
+  local filepath;
+  local location_name;
+  local file;
+  local block;
+  local block_port;
+  local block_local;
+  local service_name;
+  local service_value;
+
+  local path_to_repo="$DEV_ROOT/$repo_name"
+  if ! [[ -e "$path_to_repo" ]]; then
+    return
+  fi
+
+  cd $path_to_repo
+  echo "" > $path_to_dest
+
+  while read -r line; do
+    service_name="${line%=*}"
+    service_value="${line#*=}"
+    if ! [[ "$service_name" = "$repo_service_name" ]]; then
+      continue
+    fi
+    if ! [[ "$service_value" = "1" ]]; then
+      use_port=true
+    fi
+    if ! [[ $use_port ]]; then
+      continue
+    fi
+    for file in `ls pages`; do
+      filepath="$path_to_repo/$file"
+      [[ -d "$filepath" ]] && continue
+      location_name=${file/_/-}
+      location_name=${file/.html/}
+      block="
+  location = /$location_name {
+    proxy_pass http://127.0.0.1:$server_port/pages/$file;
+  }"
+      echo "$block" >> $path_to_dest
+    done
+  done <<< "$_combined_config"
+}
+function _build_website {
+  local repo_name="website"
+  local server_port="\$website_port"
+  local path_to_dest="$current_dir/conf/local.website.static-locations.include"
+  _build_jekyll "$repo_name" "$server_port" "$path_to_dest"
+}
+function _build_adhoc {
+  local repo_name="ad-hoc"
+  local server_port="\$adhoc_port"
+  local path_to_dest="$current_dir/conf/local.adhoc.static-locations.include"
+  _build_jekyll "$repo_name" "$server_port" "$path_to_dest"
+}
+
+newline="
+"
+vars_file_path="$current_dir/conf/vars.conf"
+profile_vars_file_path="$HOME/.b-proxy.conf"
+_combined_config=""
+function _set_combined_config {
+  local temp_combined_config="$(cat $vars_file_path)"
+  local profile_vars=""
+  if [[ -e "$profile_vars_file_path" ]]; then
+    profile_vars="$(cat $profile_vars_file_path)"
+  fi
+  # go through profile stiff
+  while read -r line; do
+    # ignore profile comments and empty
+    [[ "$line" =~ ^# ]] && continue
+    [[ -z "$line" ]] && continue
+    local service_name="${line%=*}"
+    local service_value="${line#*=}"
+
+    # go through the entire current combined line and replace
+    # the service_name lines with the overrides
+    local new_conf=""
+    while read -r conf_line; do
+      if [[ "$conf_line" =~ ^$service_name= ]]; then
+        new_conf+="$newline$line"
+      else
+        new_conf+="$newline$conf_line"
+      fi
+    done <<< "$temp_combined_config"
+    temp_combined_config="$new_conf"
+  done <<< "$profile_vars"
+
+  # now remove the newlines and comments
+  while read -r line; do
+    [[ "$line" =~ ^# ]] && continue
+    [[ -z "$line" ]] && continue
+    _combined_config+="$newline$line"
+  done <<< "$temp_combined_config"
+  _combined_config=${_combined_config/$newline/}
+}
+
+function _link_build_locations {
+  local line="$1"
+  local service_name="${line%=*}"
+  local service_value="${line#*=}"
+
+  local file_name="link.$service_name.locations.include"
+  local file_path="$current_dir/conf/$file_name"
+  local target_file_name="master.$service_name.locations"
+  if  ! [[ -z "$service_value" ]] && [[ "$service_value" -gt 0 ]]; then
+    target_file_name="local.$service_name.locations"
+
+    # website and adhoc can either be a port or root
+    if [[ "$service_name" =~ website|adhoc ]] && [[ "$service_value" -gt 1 ]]; then
+      target_file_name="local.$service_name-port.locations"
+    fi
+  fi
+  local target_file_path="$current_dir/conf/$target_file_name"
+
+  if [[ -e "$file_path" ]]; then
+    rm "$file_path"
+  fi
+  echo "$file_name -> $target_file_name"
+  ln -s "$target_file_path" "$file_path"
+}
+
+function _build_localports {
+  while read -r line; do
+    service_name="${line%=*}"
+    service_value="${line#*=}"
+    echo 'map "localports-'$service_name'" $'${service_name/-/_}'_port { default '$service_value'; }' >> "$current_dir/conf/localports.include"
+  done <<< "$_combined_config"
+}
+
+function _build_locations {
+  local service_name;
+  local service_value;
+
+  echo "" > "$current_dir/conf/localports.include";
+  _build_localports
+
+  while read -r line; do
+    _link_build_locations "$line"
+  done <<< "$_combined_config"
+}
+function _build_devroot {
+  echo $devroot_directive > "$current_dir/conf/devroot.include"
+}
+function _build_user {
+  echo $user_directive > "$current_dir/conf/user.include"
+}
+function _build_includes {
+  local force=${1:-}
+  if [[ $force ]]; then
+    rm $current_dir/conf/website.locations.include 2>/dev/null
+    rm $current_dir/conf/adhoc.locations.include 2>/dev/null
+    rm $current_dir/conf/devroot.include 2>/dev/null
+    rm $current_dir/conf/user.include 2>/dev/null
+  fi
+  # maybe put in an expire time?
+  _set_combined_config
+  [[ -e $current_dir/conf/website.locations.include ]] || _build_website
+  [[ -e $current_dir/conf/adhoc.locations.include ]] || _build_adhoc
+  [[ -e $current_dir/conf/devroot.include ]] || _build_devroot
+  [[ -e $current_dir/conf/user.include ]] || _build_user
+  _build_locations
+}
+function _install {
+  brew tap homebrew/nginx
+  _uninstall 2>/dev/null
+  brew install nginx-full --with-subs-filter-module --with-debug --with-headers-more-module
+}
+function _uninstall {
+  brew uninstall nginx-full
+}
+
+# basically install instructions....i may want to switch to using openresty (https://openresty.org/en/download.html)
+function _install_manual {
+  local tmp_path="${TMP:-/tmp}/nginx-install"
+  
+  cd $tmp_path;
+  nginx_url="http://nginx.org/download/nginx-1.12.0.tar.gz"
+  mod_headers_more_url="https://github.com/openresty/headers-more-nginx-module/archive/v0.32.tar.gz"
+  mod_subs_filter_url="https://github.com/yaoweibin/ngx_http_substitutions_filter_module/archive/master.zip"
+  pcre_url="https://ftp.pcre.org/pub/pcre/pcre-8.41.tar.gz"
+  
+  curl -o "nginx.tar.gz" "$nginx_url"
+  curl -o "mod-headers-more.tar.gz" "$mod_headers_more_url"
+  curl -o "mod-subs-filter.zip" "$mod_subs_filter_url"
+  curl -o "pcre.tar.gz" "$pcre_url"
+
+  if ! [[ `which unar >/dev/null &2>/dev/null` ]]; then
+    brew install unar
+  fi
+
+  echo "Not actually ready past this point...but it is written down" >&2
+  exit 1
+  # extract things
+
+  # prepare permissions
+  sudo mkdir -p /usr/local/nginx
+  local username="$(id -nu)"
+  local group="$(id -ng)"
+  sudo chown 
+
+  cd nginx-1.12.0
+  ./configure \
+   --with-ld-opt="-L /usr/local/lib -L/usr/local/opt/openssl/lib"\
+   --with-cc-opt="-I /usr/local/include -I/usr/local/opt/openssl/include"\
+   --with-http_ssl_module\
+   --with-pcre="$tmp_path/pcre-8.41"\
+   --with-debug\
+   --add-module="$tmp_path/ngx_http_substitutions_filter_module-0.6.4"\
+   --add-module="$tmp_path/headers-more-nginx-module-0.32"
+  make
+  make install
+}
+
+function _port {
+  local service_name;
+  local service_value;
+  local b_port;
+  local port;
+  local is_open;
+
+  local is_open_string="[ not in use ]"
+  local is_clos_string="[     in use ]"
+
+  _set_combined_config
+  while read -r line; do
+    service_name="${line%=*}"
+    service_value="${line#*=}"
+
+    # a service value of 0 means disable, a service value of > 0 means enable
+    # but a service value of 1 means no port is needed
+    if ! [[ "$service_value" -gt 1 ]]; then
+      continue
+    fi
+    port=$service_value
+    b_port="$current_dir/b-port"
+    is_open=$is_clos_string
+    if $b_port $port >/dev/null 2>&1; then
+      is_open=$is_open_string
+    fi
+    echo "port $port $is_open : $service_name"
+  done <<< "$_combined_config"
+
+}
+
+usage="
+b-proxy [-h][s|start|stop|r|restart|l|log|fw|include|install|uninstall|path]
+  -h                   - this help
+  s   | start          - start nginx
+  stop                 - stop nginx
+  r   | restart        - restart nginx
+  l   | log            - tail the nginx logs
+  c   | conf           - print the combined locations conf (from $vars_file_path combined with $profile_vars_file_path)
+    conf get [<key>]        - print key, or all if no key
+    conf set <key> [value]  - set key to value, or unset if no value
+    conf unset              - alias for 'conf set <key>'
+  p   | port           - print ports that should be open and their status
+  fw                   - add nginx to the firewall
+  include              - force build the website specific locations, the nginx user, and the dev_root. Usually not necessary
+  install              - install nginx via homebrew (does uninstall first)
+  uninstall            - uninstall nginx via homebrew
+  path                 - print path to nginx bin
+
+nginx with a config file as the current user. covers dev.blurb.com. should be similar to prod (but with dev)
+it covers some ad-hoc stuff, blurby, and website.
+also, if you make a directory $DEV_ROOT/mock-stuff, it'll server .html and .json files relative to that directory.
+  Ex. /whatever -> $DEV_ROOT/mock-stuff/whatever.html || $DEV_ROOT/mock-stuff/whatever.json
+"
+while getopts ":h" opt; do
+  case "$opt" in
+    h) echo "$usage"; exit;;
+  esac
+done
+shift $(( OPTIND - 1 ))
+
+cmd=${1:-start}
+case $cmd in
+  s|start) _start;;
+  stop) _stop;;
+  r|restart) _restart;;
+  l|log) _log;;
+  c|conf) shift; _conf "$@";;
+  p|port|ports) _port;;
+  fw) _fw;;
+  include) _build_includes true;;
+  install) _install;;
+  uninstall) _uninstall;;
+  path) echo $nginx_root_path; exit;;
+  -h|--help|help) echo "$usage";;
+  *) echo "$cmd is not a valid command" >&2; exit 1;;
+esac

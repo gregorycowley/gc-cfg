@@ -1,0 +1,33 @@
+#!/bin/bash
+current_dir=$(cd `dirname ${BASH_SOURCE[0]}`; pwd)
+DEV_ROOT=$(cd "$current_dir/.."; pwd)
+default_path_to_blurby=$(cd "$DEV_ROOT/blurby"; pwd)
+usage="
+blurby-start [-h][-b <path_to_blurby>]
+  -h - this help
+  -b - path_to_blurby - defaults to $default_path_to_blurby
+"
+
+path_to_blurby=$default_path_to_blurby
+while getopts ":hb:" opt; do
+  case "$opt" in
+    h) echo "$usage"; exit;;
+    b) path_to_blurby="$OPTARG";;
+  esac
+done
+
+cmd="
+cd /vagrant
+bundle check || bundle install
+bundle exec thin start"
+
+# Daemon options:
+#     -d, --daemonize                  Run daemonized in the background
+#     -l, --log FILE                   File to redirect output (default: /vagrant/log/thin.log)
+#     -P, --pid FILE                   File to store PID (default: tmp/pids/thin.pid)
+#     -u, --user NAME                  User to run daemon as (use with -g)
+#     -g, --group NAME                 Group to run daemon as (use with -u)
+#         --tag NAME                   Additional text to display in process listing
+
+
+$current_dir/blurby-ssh -b "$path_to_blurby" "$cmd"

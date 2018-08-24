@@ -1,0 +1,111 @@
+#!/bin/sh
+
+# pulled from  http://xecdesign.com/qemu-emulating-raspberry-pi-the-easy-way/
+# expanded via http://superuser.com/questions/690060/how-to-enable-network-with-a-raspberry-pi-emulated-on-qemu
+# tested with  2015-02-16-raspbian-wheezy.zip on OSX Mavericks
+
+function install-qemu(){
+  /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)" && brew update && brew install qemu
+  export QEMU=$(which qemu-system-arm)
+}
+
+function install-kernal(){
+  # Dowload kernel and export location
+  curl -OL
+  https://github.com/dhruvvyas90/qemu-rpi-kernel/raw/master/kernel-qemu-4.4.34-jessie
+  export RPI_KERNEL=./kernel-qemu-4.4.34-jessie
+  #export RPI_KERNEL=./qemu-rpi-kernel/kernel-qemu-4.4.34-jessie
+}
+
+function get-filesystem() {
+  #Download filesystem and export location
+  curl -o 2017-03-02-raspbian-jessie.zip
+  -L http://downloads.raspberrypi.org/raspbian/images/raspbian-2017-03-03/2017-03-02-raspbian-jessie.zip
+  unzip 2017-03-02-raspbian-jessie.zip
+  export RPI_FS=./2017-04-10-raspbian-jessie-lite.zip
+}
+
+function tweak-filesystem() {
+  #Tweak filesystem: start qemu with init flag, switch to guest window to execute tweak and close window afterwards
+
+  #$QEMU -kernel $RPI_KERNAL -cpu arm1176 -m 256 -M versatilepb -no-reboot -serial stdio -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw init=/bin/bash" -hda 2017-04-10-raspbian-jessie-lite.img
+  #$QEMU -kernel $RPI_KERNAL -cpu arm1176 -m 256 -M versatilepb -no-reboot -serial stdio -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw" -hda hda 2017-04-10-raspbian-jessie-lite.img -redir tcp:5022::22
+
+  $QEMU -kernel $RPI_KERNEL
+  -cpu arm1176 -m 256
+  -M versatilepb -no-reboot -serial stdio
+  -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw init=/bin/bash"
+  -drive "file=2017-03-02-raspbian-jessie.img,index=0,media=disk,format=raw"
+}
+
+function qemu-terminal(){
+  # enter these on the qemu terminal and exit after
+  sed -i -e 's/^/#/' /etc/ld.so.preload
+  sed -i -e 's/^/#/' /etc/ld.so.conf
+  sed -i -e 's/^/#/' /etc/fstab
+}
+
+function quemu-raspi() {
+  #Emulate Raspberry Pi
+  $QEMU -kernel $RPI_KERNEL
+  -cpu arm1176 -m 256
+  -M versatilepb -no-reboot -serial stdio
+  -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw"
+  -drive "file=2017-03-02-raspbian-jessie.img,index=0,media=disk,format=raw"
+  -net user,hostfwd=tcp::5022-:22
+}
+
+function raspi-login() {
+  ssh -p 5022 pi@localhost
+}
+
+
+# Alt setup steps:
+
+function qsetup() {
+  # OSX terminal
+  brew install qemu
+  # kernel-qemu is a linux kernel compiled with ARM1176 support.
+  # learn more here: http://xecdesign.com/compiling-a-kernel/
+  curl -OL http://xecdesign.com/downloads/linux-qemu/kernel-qemu
+  curl -o raspbian_latest.zip -L http://downloads.raspberrypi.org/raspbian_latest
+  unzip raspbian_latest.zip
+  mv 20* raspbian_latest.img
+}
+
+function qmount() {
+  # not easily possible to mount ext4 to make the following change to the image, so we load the filesystem by running the image
+  qemu-system-arm -kernel kernel-qemu -cpu arm1176 -m 256 -M versatilepb -no-reboot -serial stdio -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw init=/bin/bash" -hda raspbian_latest.img
+
+  # QEMU window (guest) - spawned by previous line
+  sed -i -e 's/^/#/' /etc/ld.so.preload
+  # TODO: clean this up with a bash var for path
+  touch /etc/udev/rules.d/90-qemu.rules
+  echo 'KERNEL=="sda", SYMLINK+="mmcblk0"' >> /etc/udev/rules.d/90-qemu.rules
+  echo 'KERNEL=="sda?", SYMLINK+="mmcblk0p%n"' >> /etc/udev/rules.d/90-qemu.rules
+  echo 'KERNEL=="sda2", SYMLINK+="root"' >> /etc/udev/rules.d/90-qemu.rules
+  exit
+}
+
+function qstart() {
+  # OSX terminal (host)
+  #   start the final raspberry pi image and specify a network mapping
+  #   of local port 5022 to the pi's port 22
+  qemu-system-arm -kernel kernel-qemu -cpu arm1176 -m 256 -M versatilepb -no-reboot -serial stdio -append "root=/dev/sda2 panic=1 rootfstype=ext4 rw" -hda raspbian_latest.img -redir tcp:5022::22
+
+
+
+  # QEMU (guest) - raspberry pi emulation
+  #   @FIXME
+  #   for some reason it drops out of the startup procedure
+  #   and dumps you to the terminal prematurely
+  exit
+  #   if this is not first-run, we are done..
+  #   else we are ushered into raspi-config (first run only)
+  #   select "Finish" when done configuring
+}
+
+function qconnect() {
+  # OSX terminal (host)
+  ssh -p 5022 pi@localhost
+}

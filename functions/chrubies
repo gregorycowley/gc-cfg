@@ -1,0 +1,13 @@
+# function chrubies () {
+  rubies=(${(ps:,:)${1}})
+
+  # Loop over each ruby given
+  for r in $rubies; do
+    echo ">> ${r} => ${@[2,-1]}"
+    chruby-exec $r -- ruby -v
+
+    chruby-exec $r -- ${@[2,-1]}
+
+    echo
+  done
+# }

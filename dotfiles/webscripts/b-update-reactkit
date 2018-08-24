@@ -1,0 +1,43 @@
+#!/bin/bash
+usage="
+b-update-reactkit [-h] <version>
+ version - major.minor (ignore the patch)
+
+npm has a hard time updating without including minor releases, which is how we want to update reactkit.
+  This will install reactkit@latest and save it like \"reactkit\": \"^1.10.0\"
+"
+
+newline="
+"
+
+# go up one directory until i get a package.json
+project_root="$(pwd)"
+while ! [[ -e "$project_root/package.json" ]]; do
+  project_root=$(cd ..; pwd)
+done
+
+while getopts ":h" opt; do
+  case "$opt" in
+    h) echo "$usage"; exit;;
+  esac
+done
+
+function prefix_none {
+  cat "$project_root/.npmrc" | grep "\S" | grep -v save-prefix > "$project_root/.npmrc-tmp";
+  mv "$project_root/.npmrc-tmp" "$project_root/.npmrc"
+}
+function prefix_tilde {
+  echo "${newline}save-prefix = ~" >> "$project_root/.npmrc"
+}
+
+version="${1:-}"
+if [[ -z "$version" ]]; then
+  version=`npm info reactkit version`
+fi
+
+read -p "Installing reactkit version $version in $project_root. (press ENTER to continue)" confirm
+
+prefix_none
+prefix_tilde
+npm install -S reactkit@$version
+prefix_none

@@ -1,0 +1,95 @@
+#!/bin/bash
+
+
+CDPATH=:$HOME/Sites/blurb.com
+
+function _default {
+  echo "This is greg's machine!"
+}
+
+function _update {
+  echo "Running git fetch on all the repos"
+  cd /Users/gcowley/Sites/blurb.com/blurby
+  git checkout master
+  git fetch upstream
+  git merge upstream/master
+
+  # Is the upstream set for this repo? If not then set it.
+  # Do we have conflicts?
+  # Should all changes be stashed and then applied? Does that sork in all cases?
+  
+
+
+  cd /Users/gcowley/Sites/blurb.com/_blurb-dashboard-react
+  git checkout master
+  git fetch upstream
+  git merge upstream/master
+
+  cd /Users/gcowley/Sites/blurb.com/bookify-react
+  git checkout master
+  git fetch upstream
+  git merge upstream/master
+
+  cd /Users/gcowley/Sites/blurb.com/hemingway
+  git checkout master
+  git fetch upstream
+  git merge upstream/master
+
+  cd /Users/gcowley/Sites/blurb.com/web-scripts
+  git checkout master
+  git fetch upstream
+  git merge upstream/master
+  #
+  cd /Users/gcowley/Sites/blurb.com/website
+  git checkout master
+  git fetch upstream
+  git merge upstream/master
+  ## git remote add upstream git@github.com:blurb/website.git
+
+  cd /Users/gcowley/Sites/blurb.com/ad-hoc
+  git checkout master
+  git fetch upstream
+  git merge upstream/master
+
+  cd /Users/gcowley/Sites/blurb.com/_reactkit
+  git checkout master
+  git fetch upstream
+  git merge upstream/master
+
+}
+
+function _current {
+    
+    
+
+
+
+    #Read current branch from current project file
+    # cd to that directory
+    # set that branch
+    echo "Setting the current project"
+    cd $HOME/Sites/blurb.com/_blurb-dashboard-react/
+    # exec zsh
+}
+
+usage="
+g [-h][t|tmux]
+  -h                  - this help
+  -u   | update       - update all Blurb repos
+  -c   | current      - set session to the most current blurb project
+"
+while getopts ":h" opt; do
+  case "$opt" in
+    h) echo "$usage"; exit;;
+  esac
+done
+shift $(( OPTIND - 1 ))
+
+cmd=${1:-default}
+case $cmd in
+  default) _default;;
+  -u|update) _update;;
+  -c|current) _current;;
+  -h|--help|help) echo "$usage";;
+  *) echo "$cmd is not a valid command" >&2; exit 1;;
+esac

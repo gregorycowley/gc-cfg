@@ -1,0 +1,56 @@
+#!/bin/bash
+
+function gnet() {
+
+
+}
+
+user_directive="
+user $(whoami) $(id -n -g $(whoami));
+"
+
+
+
+newline="
+"
+vars_file_path="$current_dir/conf/vars.conf"
+profile_vars_file_path="$HOME/.b-proxy.conf"
+_combined_build_locations=""
+
+
+function _install {
+  brew tap homebrew/nginx
+  _uninstall 2>/dev/null
+  brew install nginx-full --with-subs-filter-module --with-debug
+}
+function _uninstall {
+  brew uninstall nginx-full
+}
+
+usage="
+gnet [-h]
+  -h                   - this help
+
+"
+while getopts ":h" opt; do
+  case "$opt" in
+    h) echo "$usage"; exit;;
+  esac
+done
+shift $(( OPTIND - 1 ))
+
+cmd=${1:-start}
+case $cmd in
+  s|start) _start;;
+  stop) _stop;;
+  r|restart) _restart;;
+  l|log) _log;;
+  c|conf) _set_build_locations; echo "$_combined_build_locations"; exit;;
+  fw) _fw;;
+  include) _build_includes true;;
+  install) _install;;
+  uninstall) _uninstall;;
+  path) echo $nginx_root_path; exit;;
+  -h|--help|help) echo "$usage";;
+  *) echo "$cmd is not a valid command" >&2; exit 1;;
+esac

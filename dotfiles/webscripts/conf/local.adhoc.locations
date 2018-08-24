@@ -1,0 +1,8 @@
+include local.adhoc.static-locations.include;
+location /pages/ad-hoc-assets {
+  root $adhoc_site_root;
+}
+location @adhoc {
+  root $adhoc_site_root;
+  try_files $uri /pages/$language_id$uri /pages$uri /pages/$language_id/pages$uri.html /pages$uri.html =404;
+}

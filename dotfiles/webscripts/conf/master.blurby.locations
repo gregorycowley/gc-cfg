@@ -1,0 +1,20 @@
+location ~ ^/(my|components|stylesheets|images|javascripts|bookshow|bookstore|fonts|api)/? {
+  proxy_set_header Accept-Encoding ""; # to uncompress responses so subs_filter works
+  proxy_set_header Connection close;
+  proxy_set_header Host $master_http_host;
+  proxy_pass http://master;
+}
+
+# the account pages need a jumpto= query param that points to dev.blurb.com
+location = /my/account/logout {
+  rewrite "\?.+" "";
+  rewrite ".*" "http://$master_http_host/my/account/logout?jumpto=http%3A//$http_host/my/account/login" redirect;
+}
+location = /my/account/login {
+  set $jumpto_path "/dashboard/bookmetrics";
+  if ($arg_jumpto) {
+    set $jumpto_path $arg_jumpto;
+  }
+  set $args "jumpto=http://$http_host$jumpto_path";
+  rewrite ".*" "http://$master_http_host$uri" redirect;
+}

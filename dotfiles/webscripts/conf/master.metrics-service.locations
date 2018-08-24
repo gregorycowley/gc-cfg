@@ -1,0 +1,5 @@
+location /metrics-service/v1/dashboard/ {
+  include access-control.conf;
+  proxy_set_header Accept-Encoding ""; # to uncompress responses so subs_filter works
+  proxy_pass http://hq-master-metrics01.eng.blurb.com:8080;
+}

@@ -1,0 +1,54 @@
+#!/bin/bash -eu
+usage="
+b-mov-to-gif [-h] <input_path> [<output_path>]
+ -h - help
+ input_path - path to mov file
+ output_path - path to outputted file. if omitted, will create in cwd based on the input filename
+"
+
+while getopts ":h" opt; do
+  case "$opt" in
+    h) echo "$usage"; exit;;
+  esac
+done
+
+input_path="${1:-}"
+output_path="${2:-}"
+
+if [[ -z "$input_path" ]]; then
+  echo "Input path required" >&2
+  exit 1
+fi
+
+if ! [[ `which ffmpeg` > /dev/null ]]; then
+  echo "ffmpeg not installed. do 'brew install ffmpeg'" >&2
+  exit 1
+fi
+if ! [[ `which gifsicle` > /dev/null ]]; then
+  echo "gifsicle not installed. do 'brew install gifsicle'" >&2
+  exit 1
+fi
+
+if [[ -z "$output_path" ]]; then
+  cwd="$(pwd)"
+  filename="$(basename $input_path)"
+  output_path="$cwd/$filename.gif"
+
+elif [[ -d "$output_path" ]]; then
+  filename="$(basename $input_path)"
+  output_path="${output_path%/}/$filename.gif" # the %/ is to remove the / off the back end
+fi
+
+answer="Y"
+if [[ -e "$output_path" ]]; then
+  relative_output_path="$(python -c 'import os, sys; print(os.path.relpath("'$output_path'"))')"
+  echo "$relative_output_path already exists. overwrite? Type Y/n then [ENTER]"
+  read answer
+fi
+if ! [[ "$answer" = "Y" ]]; then
+  echo "Not overwriting."
+  exit
+fi
+
+ffmpeg -i "$input_path" -pix_fmt rgb24 -r 24 -f gif - | gifsicle --optimize=3 --delay=3 > "$output_path"
+echo "Converted $input_path to $output_path"

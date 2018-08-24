@@ -1,0 +1,56 @@
+#!/bin/bash
+alias upzsh="upgrade_oh_my_zsh"
+alias dvy="itermocil"
+
+alias gbb="cd ~/Sites/blurb.com/bookify"
+alias gbd="cd ~/Sites/blurb.com/_blurb-dashboard-react"
+
+function g-blurby() {
+  cd $HOME/Sites/blurb.com/blurby;
+}
+function g-blurbyup() {
+  cd $HOME/Sites/blurb.com/blurby;
+  vagrant up;
+  vagrant ssh;
+}
+
+# alias fu="brew install --force Caskroom/cask/flash-player-debugger Caskroom/cask/pepper-flash"
+# alias fu2="./opt/homebrew-cask/Caskroom/pepper-flash/23.0.0.162/Install\ Adobe\ Flash\ Player.app"
+# alias oldbf="git checkout 7e411903e7e4e79c96cf2cf95748923a1aef4a3f"
+alias gscratch='ssh -i "gblurb-scratch.pem" ubuntu@ec2-52-40-124-109.us-west-2.compute.amazonaws.com'
+
+function reloadshell() { exec $SHELL }
+function getpwd() { pwd | pbcopy }
+function flush() { sudo killall -HUP mDNSResponder }
+function disc() { df -h }
+function up() { uptime | sed -e "s/:/ /2" | sed -e "s/,/ /2" | awk '{print "Up " $3 " days, " $5 " hours and " $6 " minutes"}' }
+function purgeSVN() { find . -name .svn  -type d -print0 |xargs -0 rm -rf }
+function purgeDS() { find . -name '*.DS_Store' -type f -delete }
+
+function hidefiles() {
+  defaults write com.apple.finder AppleShowAllFiles NO;
+  killall Finder /System/Library/CoreServices/Finder.app;
+}
+function showfiles() {
+  defaults write com.apple.finder AppleShowAllFiles YES;
+  killall Finder /System/Library/CoreServices/Finder.app;
+}
+function cls() {
+  osascript -e 'tell application "System Events" to keystroke "k" using command down'
+}
+
+function portck() {
+  sudo nmap -p22 -sV 192.168.0.0/24
+}
+
+function fix-hangouts-camera() {
+  sudo killall VDCAssistant
+}
+
+function myconfigfolder() {
+  cd ~/.myconfigurations/
+}
+
+function g-src() {
+  source ~/.profile
+}

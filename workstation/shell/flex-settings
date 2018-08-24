@@ -1,0 +1,26 @@
+#!/usr/sh
+
+# Flex
+if false
+	then
+	# Setup for Flex 4.1
+	JAVA_HOME="/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home"
+	FLEX_HOME="/Users/gcowley/Sites/blurb.com/sdks/flex_sdk_4.1.0.16076"
+fi
+if false
+	then
+	# Setup for Flex 4.X (Latest)
+	JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.8.0_101.jdk/Contents/Home"
+	FLEX_HOME="/Users/gcowley/Sites/blurb.com/flex-sdk"
+fi
+PATH=$PATH:$JAVA_HOME/bin:$FLEX_HOME/bin
+export JAVA_HOME FLEX_HOME PATH
+
+# Apache Flex Utilities
+export FALCON_HOME="/Users/gcowley/Sites/blurb.com/flex-sdk"
+export TLF_HOME="/Users/gcowley/Sites/blurb.com/flex-tlf"
+export JFLEX_JAR="/Users/gcowley/Sites/blurb.com/jflex-1.6.1/jflex-1.6.1/lib/jflex-1.6.1.jar"
+export BLAZEDS_HOME="/Users/gcowley/Sites/blurb.com/flex-blazeds"
+export MAVEN_HOME="/usr/local/Cellar/maven31/3.1.1/"
+PATH=$PATH:$FALCON_HOME/lib:$PLAYERGLOBAL_HOME
+export FALCON_HOME JOB_NAME BUILD_NUMBER PATH

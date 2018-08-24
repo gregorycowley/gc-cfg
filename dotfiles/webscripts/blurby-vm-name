@@ -1,0 +1,9 @@
+vm_name=
+while read line; do
+  name=${line/ */}
+  name=${name//\"/}
+  if [[ $name =~ blurby ]]; then
+    vm_name="$name"
+  fi
+done <<< "$(VBoxManage list vms)"
+echo "$vm_name"

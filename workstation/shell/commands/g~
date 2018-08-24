@@ -1,0 +1,176 @@
+#!/bin/bash
+
+# This command requires z (https://github.com/rupa/z).
+#
+#
+#
+#
+
+# TOOLS=(z)
+
+# # Check whether needed programs are installed
+# for TOOL in ${TOOLS[*]}
+# do
+#     hash $TOOL 2>/dev/null || { echo >&2 "I require $TOOL but it's not installed.  Aborting."; exit 1; }
+# done
+
+function _default {
+  echo "This is greg's machine! Opening" $1
+  # This doesn't work as planned because this script will only
+  # launch new sub-shells instead of modifying the current shell.
+  # For now I'll use z.
+
+  # project=$1
+  # case $project in
+  #   blurby) cd $HOME/Sites/blurb.com/blurby;;
+  #   bookify) cd $HOME/Sites/blurb.com/bookify;;
+  #   reactkit) cd $HOME/Sites/blurb.com/_reactkit;;
+  #   dashboard) cd $HOME/Sites/blurb.com/_blurb-dashboard-react;;
+  #   *) echo "$project is not a valid command" >&2; exit 1;;
+  # esac
+}
+
+function _tmux-setup {
+  SESSION=$USER
+
+  tmux -2 new-session -d -s $SESSION
+
+  # # Setup a window for tailing log files
+  tmux new-window -t $SESSION:1 -n 'Logs'
+  tmux split-window -h
+  tmux select-pane -t 0
+  tmux send-keys "cd ~/Sites/blurb.com/blurby/" C-m
+  tmux send-keys "blurby-start" C-m
+  tmux select-pane -t 1
+  tmux send-keys "cd ~/Sites/blurb.com/_blurb-dashboard-react/" C-m
+  # tmux split-window -v
+  # tmux resize-pane -D 20
+  # tmux send-keys "cd ~/Sites/blurb.com" C-m
+  # # Setup a CoffeeScript compiler/watchdog pane
+  # tmux select-pane -t 0
+  # tmux split-window -v
+  # tmux resize-pane -D 20
+  # tmux send-keys "coffee -o /vagrant/root/static/js/ -cw /vagrant/root/coffee/" C-m
+  #
+  # # Setup a MySQL window
+  # tmux new-window -t $SESSION:2 -n 'MySQL' 'mysql -uroot'
+  #
+  # # Set default window
+  tmux select-window -t $SESSION:1
+  #
+  # # Attach to session
+  tmux -2 attach-session -t $SESSION
+}
+
+function isDirectory {
+  DIR="$1"
+
+  echo "Checking directory " $DIR
+
+  if [ $# -lt 1 ]
+  then
+    echo "Incorrect Usage"
+    exit 3
+
+  elif [ ! -e "$DIR" ]
+  then
+    echo "Directory does not exist!"
+    exit 4
+
+  elif [ ! -d "$DIR" ]
+  then
+    echo "Not a Directory"
+    exit 5
+  else
+    echo "Path is okay"
+
+  fi
+}
+
+function _sort_archive_photos {
+  # Do something...
+  echo "Beginning image to folder sort...";
+
+  # SRC=$2
+  # DST=$3
+
+  SRC="/Volumes/DroboMax 2 1/Photography/_UNSORTED"
+  DST="/Volumes/DroboMax 2 1/Photography/_SORTED"
+
+
+  # Verify src
+  echo "The source dir $SRC"
+  # is this a valid directory?
+  isDirectory "$SRC"
+
+
+  # Verify dst
+  echo "The destination dir $DST"
+  isDirectory "$DST"
+
+  for f in $FILES
+do
+  echo "Processing $f file..."
+  # take action on each file. $f store current file name
+  cat $f
+done
+  # Begin iterating through src files
+
+  # For each file:
+  #   Image
+  #   Folder
+  #   Video
+  #   Other
+
+  # Parse file data:
+  # ls -l
+  # stat
+  # file
+  # identify
+
+  # Creation Date
+  # Mime-type
+  # file size
+  # pixel dimensions
+
+  # Does this file have metadata?
+  # What does this file have and what is available to image and media files?
+
+  # For sorting images into folders:
+
+  # Look for common file name patterns
+  # XXX.MOV
+  # IMG_XXX.jpg
+  # YYYYMMDD_name_index(.cr2|.jpg|.nef|.dng)
+  # LR.lrcat
+  # cImage_22067.png
+  # 100_0014.JPG
+  # 20050901a_thesak_0201.jpg
+  # BDineva-StoyanComputer-057-p1 - Version 4.jpg
+  # rsingh_671-p1 - Version 2.jpg
+  # 2017-04-27 15.07.59.jpg
+  # Handle extention variations jpg|JPG|JPEG|jpeg
+}
+
+usage="
+g [-h][t|tmux]
+-h                  - this help
+t   | tmux          - start tmux session for the Blurby/React Dashboard
+x   | experiment    - a place to work on scipts
+"
+while getopts ":h" opt; do
+  case "$opt" in
+    h) echo "$usage"; exit;;
+  esac
+done
+shift $(( OPTIND - 1 ))
+
+cmd=${1:-start}
+case $cmd in
+  start) _default "$@";;
+  t|tmux) _tmux-setup;;
+  x|experiment) _sort_archive_photos "$@";;
+  -h|--help|help) echo "$usage";;
+  *) echo "$cmd is not a valid command" >&2; exit 1;;
+  # *) _default $1;;
+esac

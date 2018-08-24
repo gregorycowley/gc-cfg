@@ -1,0 +1,36 @@
+#!/bin/bash
+current_dir=$(cd `dirname ${BASH_SOURCE[0]}`; pwd)
+DEV_ROOT=$(cd "$current_dir/.."; pwd)
+
+path_to_website=$(cd "$DEV_ROOT/website"; pwd)
+path_to_buildkit=$(cd "$DEV_ROOT/blurb-buildkit"; pwd)
+
+usage="
+website-link-buildkit [-h][-r]
+  -h - this help
+  -r - revert link
+
+This links the build/dist/assets folder to website's buildkit/assets folder
+  that way you can run website with a non fully compiled js file
+"
+
+revert=
+while getopts ":hr" opt; do
+  case "$opt" in
+    h) echo "$usage"; exit;;
+    r) revert=true;;
+  esac
+done
+
+cd $path_to_website
+relative_path_to_bower_assets="website-assets/buildkit/assets"
+
+# I have to do this for each language's site
+while read -r line; do
+  path_to_bower_assets="$line/$relative_path_to_bower_assets"
+  args="$path_to_bower_assets"
+  if [[ $revert ]]; then
+    args="-r $args"
+  fi
+  "$current_dir/buildkit-link" $args
+done <<< "$(find "$path_to_website/_site" -name "pages")"

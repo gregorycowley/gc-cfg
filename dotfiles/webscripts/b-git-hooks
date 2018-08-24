@@ -1,0 +1,61 @@
+#!/bin/bash
+set -o pipefail -eu
+
+current_dir=$(cd `dirname ${BASH_SOURCE[0]}`; pwd)
+DEV_ROOT=$(cd "$current_dir/.."; pwd)
+REPOS_TO_SKIP=$(basename $current_dir) ## only the name of the repo
+
+usage="
+b-git-hooks [-h][-f]
+  -h this help
+  -f force creation, will overwrite existing git hook scripts
+Adds git hook scripts in DEV_ROOT/git-hooks-*
+So, if you have a script called git-hooks-prepare-commit-msg, this will copy that script
+  to __repo_dir__/.git/hooks/prepare-commit-msg, where __repo_dir__ is every repo in your 
+  DEV_ROOT ($DEV_ROOT) folder, that's not in REPOS_TO_SKIP ($REPOS_TO_SKIP)
+"
+
+should_force=
+while getopts ":hf" opt; do
+  case "$opt" in
+    h) echo "$usage"; exit;;
+    f) should_force=true;;
+  esac
+done
+
+for script_path in `ls ${DEV_ROOT}/git-hooks-*`; do
+  repos_added=
+  hook_script_filename="${script_path#${DEV_ROOT}/git-hooks-}" #remove the prefix
+  
+  for repo in `ls ${DEV_ROOT}`; do
+    should_skip=
+    for repo_to_skip in $REPOS_TO_SKIP; do
+      if [[ "$repo" = "$repo_to_skip" ]]; then
+        should_skip=true
+      fi
+    done
+    if [[ $should_skip ]]; then
+      continue
+    fi
+
+    # only pay attention to git repos
+    if ! [[ -d "$DEV_ROOT/$repo/.git" ]]; then
+      continue
+    fi
+
+    hook_script_dir="${DEV_ROOT}/$repo/.git/hooks"
+    mkdir -p "$hook_script_dir"
+
+    if [[ -e "$hook_script_dir/$hook_script_filename" ]] && ! [[ "$should_force" ]]; then
+      echo "skipping $hook_script_filename for $repo, script already exists ($hook_script_dir/$hook_script_filename)"
+      continue
+    fi
+
+    repos_added="$repos_added $repo"
+    hook_filepath="$hook_script_dir/$hook_script_filename"
+    cp "$script_path" "$hook_filepath"
+    chmod +x "$hook_filepath"
+  done
+
+  echo "added $hook_script_filename to ${repos_added# *}" #removing spaces from the front
+done

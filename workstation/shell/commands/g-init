@@ -1,0 +1,13 @@
+#!/bin/bash
+
+#SHELL_DIR=$(pwd)
+SHELL_DIR=$HOME/.myconfigurations/workstation/shell/commands
+
+echo "Setting files in $SHELL_DIR to be executable."
+
+for f in $SHELL_DIR/*
+do
+  echo "Processing $f file..."
+  sudo chmod +x $f
+  stat -f %Sp $f
+done

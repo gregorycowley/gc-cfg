@@ -1,0 +1,22 @@
+##
+# Host Database
+#
+# localhost is used to configure the loopback interface
+# when the system is booting.  Do not change this entry.
+##
+127.0.0.1	localhost
+255.255.255.255	broadcasthost
+::1             localhost 
+127.0.0.1 dev.blurb.com
+127.0.0.1 services.dev.blurb.com
+
+127.0.0.1 dev-au.blurb.com
+127.0.0.1 dev-br.blurb.com
+127.0.0.1 dev-nl.blurb.com
+127.0.0.1 dev-it.blurb.com
+127.0.0.1 dev.blurb.co.uk
+127.0.0.1 dev.blurb.fr
+127.0.0.1 dev.blurb.de
+127.0.0.1 dev.blurb.es
+127.0.0.1 dev.blurb.ca
+127.0.0.1 dev-fr.blurb.ca

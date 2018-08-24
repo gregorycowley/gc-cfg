@@ -1,0 +1,16 @@
+# function savegif {
+  # If arg 2 is given, use that as filename
+  if [[ -n $2 ]]; then
+    destination="$2"
+  else
+    # Otherwise, use the gif's name from the URL
+    destination="$(basename "$1")"
+  fi
+  giffile="$HOME/GoogleDrive/GifCentral/${destination/.gif/}.gif"
+  if [[ -f "$giffile" ]]; then
+    echo "ERR: ${destination} already exists in GifCentral" > /dev/stderr
+    return 1
+  else
+    curl -o "$giffile" "$1" && echo "LOG: Saved ${destination} successfully"
+  fi
+# }

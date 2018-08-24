@@ -1,0 +1,80 @@
+function prompt_gcowley_precmd {
+  local exitstatus=$?
+  setopt localoptions noxtrace noksharrays
+  psvar=(SIG)
+  [[ $exitstatus -gt 128 ]] && psvar[1]=SIG$signals[$exitstatus-127]
+  [[ $psvar[1] = SIG ]] && psvar[1]=$exitstatus
+  jobs % >/dev/null 2>&1 && psvar[2]=
+}
+
+function prompt_gcowley_battery {
+  if [[ ! -f /usr/bin/pmset ]]; then
+    return ""
+  fi
+
+  pmset -g batt | tail -1 | awk '{
+    # TODO: handle AC Power not charging;
+    if ($4 == "charging;") {
+      icon="%1{⚡️%}"
+    } else if ($4 == "charged;") {
+      icon="🌟"
+    } else {
+      icon="🔋"
+    }
+    sub(";", "", $3)
+    sub("%", "%%", $3)
+    output = sprintf("%s %s ", $3, icon)
+    if ($5 != "0:00") { output = sprintf("%s (%s)", output, $5) }
+    print output
+  }'
+}
+
+function prompt_gcowley_datetime {
+  date "+%Y-%m-%d %H:%M:%S"
+}
+
+function prompt_gcowley_ruby {
+  type chruby > /dev/null && (chruby | awk '/\*/ { sub("ruby-", "", $2); print $2 }')
+}
+
+function prompt_gcowley_append_triton {
+  [[ -z $TRITON_PROFILE ]] || echo -n " | $TRITON_PROFILE"
+}
+
+function prompt_gcowley_setup {
+
+  # PROMPT='%{$fg[magenta]%}[%c] %{$reset_color%}'
+  # RPROMPT='%{$fg[magenta]%}$(git_prompt_info)%{$reset_color%} $(git_prompt_status)%{$reset_color%}'
+
+  PS1='%{$fg[magenta]%}[%c] %{$reset_color%}'
+  PS2='%{$fg[magenta]%}$(git_prompt_info)%{$reset_color%} $(git_prompt_status)%{$reset_color%}'
+
+  ZSH_THEME_GIT_PROMPT_PREFIX=""
+  ZSH_THEME_GIT_PROMPT_SUFFIX=""
+  ZSH_THEME_GIT_PROMPT_DIRTY=""
+  ZSH_THEME_GIT_PROMPT_CLEAN=""
+  ZSH_THEME_GIT_PROMPT_ADDED="%{$fg[cyan]%} ✈"
+  ZSH_THEME_GIT_PROMPT_MODIFIED="%{$fg[yellow]%} ✭"
+  ZSH_THEME_GIT_PROMPT_DELETED="%{$fg[red]%} ✗"
+  ZSH_THEME_GIT_PROMPT_RENAMED="%{$fg[blue]%} ➦"
+  ZSH_THEME_GIT_PROMPT_UNMERGED="%{$fg[magenta]%} ✂"
+  ZSH_THEME_GIT_PROMPT_UNTRACKED="%{$fg[grey]%} ✱"
+
+  #  PS1='[%(2L.%L/.)'$ZSH_VERSION']%(?..%B{%v}%b)%n%(2v.%B@%b.@)%m:%B%~%b%(!.#.>) '
+
+  # [[ ! -z "$SSH_CONNECTION" ]] && sshflag="☎︎ "
+
+  # PS1="➡️  %{\$fg_bold[green]%}%m%{\$reset_color%} | %{\$fg_bold[blue]%}%1~%{$reset_color%} | \$(git_prompt_info) | \$(prompt_gcowley_datetime) | \$(prompt_gcowley_battery) | \$(prompt_gcowley_ruby)\$(prompt_gcowley_append_triton)${prompt_newline}\$sshflag↳ %n%(!.#.$) "
+
+  # PS2='%(4_:... :)%3_> '
+
+  # [[ "Darwin" == $(uname) ]] && RPROMPT="\$(prompt_gcowley_prepend_triton)\$(prompt_gcowley_ruby) | \$(prompt_gcowley_battery) | \$(prompt_gcowley_datetime)"
+  # [[ -z $RPROMPT ]] && RPROMPT="\$(prompt_gcowley_datetime)"
+
+  prompt_opts=( cr subst percent )
+
+  add-zsh-hook precmd prompt_gcowley_precmd
+}
+
+
+prompt_gcowley_setup "$@"

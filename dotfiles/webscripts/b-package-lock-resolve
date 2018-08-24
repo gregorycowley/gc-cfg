@@ -1,0 +1,45 @@
+#!/bin/bash
+usage="
+b-package-lock-resolve [-h]
+ -h help
+
+If you get a package-lock.json merge conflict, run this.
+Basically, it checks out the package-lock from the remote and runs npm install
+"
+while getopts ":h" opt; do
+  case "$opt" in
+    h) echo "$usage"; exit;;
+  esac
+done
+
+# Basically from this: https://github.com/yarnpkg/yarn/issues/1776#issuecomment-269539948
+project_root="$(git rev-parse --show-toplevel)"
+cd "$project_root"
+
+package_json_is_conflict=
+package_lock_json_is_conflict=
+while read -r file; do
+  if [[ "$file" = "package.json" ]]; then
+    package_json_is_conflict=true
+  fi
+  if [[ "$file" = "package-lock.json" ]]; then
+    package_lock_json_is_conflict=true
+  fi
+done <<< "$(git diff --name-only --diff-filter=U)"
+
+if ! [[ $package_lock_json_is_conflict ]]; then
+  echo "Your package-lock file is already fine! Good for you!"
+  exit
+fi
+
+if [[ $package_json_is_conflict ]]; then
+  echo "Resolve package.json first" >&2;
+  exit 1
+fi
+
+git checkout MERGE_HEAD package-lock.json
+npm install
+
+echo "
+Resolved! You can commit it now!
+"

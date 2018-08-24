@@ -1,0 +1,8 @@
+# master-only is for locations that have no master version. The reason they're here
+# is so you can disable them if you can't connect to master (vpn down or something)
+
+# I don't know where cms is served from...
+location /cms {
+    proxy_set_header Accept-Encoding ""; # to uncompress responses so subs_filter works
+    proxy_pass http://master.eng.blurb.com;
+}

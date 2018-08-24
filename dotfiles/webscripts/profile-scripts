@@ -1,0 +1,33 @@
+case $SHELL in
+  */zsh)
+    current_dir=$(cd `dirname $0`; pwd);;
+  */bash)
+    current_dir=$(cd `dirname ${BASH_SOURCE[0]}`; pwd);;
+esac
+
+DEV_ROOT=$(cd "$current_dir/.."; pwd)
+
+function _cdd {
+  local cur
+  # Pointer to current completion word.
+  # By convention, it's named "cur" but this isn't strictly necessary.
+
+  COMPREPLY=()   # Array variable storing the possible completions.
+  cur=${COMP_WORDS[COMP_CWORD]}
+  local directories=$(ls $DEV_ROOT)
+
+  COMPREPLY=( $( compgen -W "$directories" -- $cur ) )
+  return 0
+}
+function cdd {
+  local relative_dir="$1"
+  local real_dir="$DEV_ROOT/$1"
+  cd "$real_dir"
+}
+
+case $SHELL in
+  */zsh)
+    compdef '_path_files -f -/ -W '"$DEV_ROOT"'' cdd;;
+  */bash)
+    complete -F _cdd -o filenames cdd;;
+esac

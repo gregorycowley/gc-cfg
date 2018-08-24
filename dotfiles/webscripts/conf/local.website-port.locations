@@ -1,0 +1,11 @@
+location = / {
+  rewrite "/.*" "/pages/homepage.html" break;
+  proxy_set_header Accept-Encoding ""; # to uncompress responses so subs_filter works
+  proxy_pass http://127.0.0.1:$website_port;
+}
+location @website {
+    error_page 404 = @adhoc;
+    proxy_set_header Accept-Encoding ""; # to uncompress responses so subs_filter works
+    proxy_pass http://127.0.0.1:$website_port;
+}
+include local.website.static-locations.include;

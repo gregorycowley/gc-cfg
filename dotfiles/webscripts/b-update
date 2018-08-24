@@ -1,0 +1,23 @@
+#!/bin/bash
+current_dir="$(cd `dirname ${BASH_SOURCE[0]}`; pwd)"
+cd "$current_dir"
+
+# upgrading to/past nginx-headers-more requires a b-proxy install
+nginx_headers_more_commit="e3c360b210c8c2342e1805adfd63f3f3c38b4c0f"
+had_nginx_headers_more=
+if git show "$nginx_headers_more_commit" >/dev/null 2>&1; then
+  had_nginx_headers_more=true
+fi
+
+git pull git@github.com:blurb/web-scripts.git master
+npm install
+
+if ! [[ $had_nginx_headers_more ]]; then
+  echo "You need to run b-proxy install (extra module)"
+  read -p "Run now? [y/n] [ENTER] " nginx_headers_more_confirm
+  if [[ "$nginx_headers_more_confirm" = "y" ]]; then
+    $current_dir/b-proxy install
+  else
+    echo "Fine... b-proxy install. Think about it."
+  fi
+fi

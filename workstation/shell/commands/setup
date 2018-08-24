@@ -1,0 +1,6 @@
+#!/bin/bash
+
+function react-setup() {
+  brew install watchman
+  brew install shellcheck
+}

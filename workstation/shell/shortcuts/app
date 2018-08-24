@@ -1,0 +1,23 @@
+#!/bin/bash
+alias atom="atom ."
+alias dpg="dotgpg"
+alias bd="brew doctor"
+
+function gqs() {
+  ruby -rwebrick -e 'WEBrick::HTTPServer.new(:Port => 8000, :DocumentRoot => Dir.pwd).start'
+  # cd "$1"
+  # python -m SimpleHTTPServer
+}
+
+function gst() {
+  open -a "/Applications/Sublime\ Text.app/" "$1"
+}
+
+function mc() { mailcatcher -f -v }
+
+function openmd() { open -a "/Applications/Mou.app" "$1"; }
+
+function bu() {
+  brew update
+  brew doctor
+}

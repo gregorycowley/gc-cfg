@@ -1,0 +1,8 @@
+# script/generate in any rails version
+# function sg () {
+  if [[ -e "script/generate" ]]; then
+    bundle exec script/generate $*
+  else
+    bundle exec script/rails generate $*
+  fi
+# }

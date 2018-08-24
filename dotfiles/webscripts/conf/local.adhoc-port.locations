@@ -1,0 +1,9 @@
+location /feed {
+  proxy_set_header Accept-Encoding ""; # to uncompress responses so subs_filter works
+  proxy_pass http://127.0.0.1:$adhoc_port;
+}
+include local.adhoc.static-locations;
+location @adhoc {
+  proxy_set_header Accept-Encoding ""; # to uncompress responses so subs_filter works
+  proxy_pass http://127.0.0.1:$adhoc_port;
+}

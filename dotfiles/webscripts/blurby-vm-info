@@ -1,0 +1,35 @@
+#!/bin/bash
+current_dir=$(cd `dirname ${BASH_SOURCE[0]}`; pwd)
+vm_name=$($current_dir/blurby-vm-name)
+
+usage="
+blurby-vm-info [-h] [key_matcher][,key_matcher]
+ -h - this help
+ key_matcher - a regex that matches a key
+"
+
+while getopts ":h" opt; do
+  case "$opt" in
+    h) echo "$usage"; exit;;
+  esac
+done
+
+shift $(( OPTIND - 1 ))
+key_matchers="$@"
+if [[ -z "$key_matchers" ]]; then
+  key_matchers="."
+fi
+
+while read info_line; do
+  does_match=
+  key="${info_line%=*}"
+  value="${info_line#*=}"
+  for key_matcher in $key_matchers; do
+    if [[ $key =~ $key_matcher ]]; then
+      does_match=1
+    fi
+  done
+  if [[ $does_match ]]; then
+    echo "$info_line"
+  fi
+done <<< "$(VBoxManage showvminfo --machinereadable $vm_name)"

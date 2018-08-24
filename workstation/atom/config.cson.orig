@@ -1,0 +1,235 @@
+"*":
+<<<<<<< HEAD
+  Hydrogen:
+    debug: true
+  "atom-package-deps":
+    ignored: []
+  core:
+    audioBeep: false
+    customFileTypes:
+      "source.ini": [
+        ".buckconfig"
+        ".hgrc"
+        ".flowconfig"
+      ]
+      "source.json": [
+        "BUCK.autodeps"
+      ]
+      "source.python": [
+        "BUCK"
+      ]
+    destroyEmptyPanes: false
+    disabledPackages: [
+      "pull-requests"
+      "web-view"
+      "script-runner"
+      "pretty-json"
+      "atom-react-native-autocomplete"
+      "language-gfm"
+      "atom-lupa"
+      "source-preview-react"
+      "linter"
+      "minimap"
+      "navigate"
+      "npm-docs"
+      "npm-install"
+      "nuclide"
+      "platformio-ide"
+      "react-es6-snippets"
+      "react-redux-snippets"
+      "react-snippets"
+      "redux-snippets"
+      "tool-bar"
+      "package-sync"
+      "package-cop"
+      "linter-sass-lint"
+      "linter-gcc"
+      "language-ini"
+      "javascript-snippets"
+      "intentions"
+      "goto-definition"
+      "glowing-cursor"
+      "find-in-directory"
+      "es6-javascript"
+      "emmet"
+      "define-jump"
+      "class-complete"
+      "busy"
+      "build"
+      "autocomplete-js-import"
+      "autocomplete-clang"
+      "auto-update-packages"
+      "atom-format-lua"
+      "atom-alignment"
+      "Termrk"
+=======
+  "":
+    slim:
+      text:
+        editor:
+          preferredLineLength: 130
+          showIndentGuide: true
+          showInvisibles: false
+    source:
+      yml:
+        "tabs-to-spaces":
+          onSave: "none"
+  "atom-material-ui":
+    colors:
+      abaseColor: "#ef5350"
+      accentColor: "#59fcff"
+      genAccent: true
+      predefinedColor: "Red"
+    tabs:
+      compactTabs: true
+      tintedTabBar: true
+    treeView:
+      blendTabs: true
+      compactList: true
+    ui:
+      animations: false
+      panelContrast: true
+      panelShadows: true
+  "autocomplete-js-import":
+    fuzzy:
+      enabled: true
+  "autocomplete-ruby":
+    rsensePath: "/Users/chrishough/.rbenv/versions/2.4.1/bin/rsense"
+  autosave:
+    enabled: true
+  core:
+    audioBeep: false
+    closeDeletedFileTabs: true
+    closeEmptyWindows: false
+    destroyEmptyPanes: false
+    disabledPackages: [
+      "tabs-to-spaces"
+      "language-cfml"
+      "synced-sidebar"
+      "linter-rubocop"
+      "linter-rubocop"
+      "trailing-spaces"
+>>>>>>> 12c133242a2dda9c2be46d89f8aabbe90d80f9ad
+    ]
+    excludeVcsIgnoredPaths: false
+    ignoredNames: [
+      ".git"
+      ".hg"
+      ".svn"
+      ".DS_Store"
+      "._*"
+      "Thumbs.db"
+      "desktop.ini"
+      ".pioenvs"
+      ".piolibdeps"
+      ".clang_complete"
+      ".gcc-flags.json"
+    ]
+<<<<<<< HEAD
+    projectHome: "/Users/gcowley/Sites"
+    telemetryConsent: "no"
+    themes: [
+      "one-dark-ui"
+=======
+    packagesWithKeymapsDisabled: [
+      "git-plus"
+    ]
+    telemetryConsent: "no"
+    themes: [
+      "atom-dark-ui"
+>>>>>>> 12c133242a2dda9c2be46d89f8aabbe90d80f9ad
+      "base16-tomorrow-dark-theme"
+    ]
+    titleBar: "custom"
+  editor:
+    fontSize: 15
+    scrollPastEnd: true
+  "exception-reporting":
+<<<<<<< HEAD
+    userId: "d13b7056-c764-08e0-45ed-b300f4db1cf3"
+  "file-icons":
+    coloured: false
+  "linter-flexpmd":
+    javaExecutablePath: "/Users/gcowley/.jenv/shims/java"
+  "linter-ui-default":
+    useBusySignal: false
+  navigate:
+    f1: "http://devdocs.io/#q=&searchterm"
+    f10: "https://duckduckgo.com/?q=&searchterm"
+    f6: "http://www.bing.com/search?q=&searchterm"
+  nuclide:
+    "nuclide-working-sets":
+      workingSets: [
+        {
+          name: "Dashboard"
+          active: false
+          uris: [
+            "/Users/gcowley/Sites/blurb.com/_blurb-dashboard-react"
+          ]
+        }
+      ]
+=======
+    userId: "d9f8a28e-3694-e767-4e3e-180303f43226"
+  "git-plus":
+    commits:
+      verboseCommits: true
+  "glowing-cursor":
+    cursorWidth: 5
+    glowColor: "#ff2739"
+    glowDistance: 2
+    innerColor: "#ff2739"
+  linter:
+    statusBar: "Show all errors"
+  "linter-js-yaml": {}
+  "linter-jshint": {}
+  "linter-rubocop": {}
+  "linter-ui-default":
+    panelHeight: 81
+  "markdown-preview":
+    useGitHubStyle: true
+  "package-sync":
+    forceOverwrite: true
+>>>>>>> 12c133242a2dda9c2be46d89f8aabbe90d80f9ad
+  "platformio-ide-terminal":
+    style:
+      theme: "solarized-dark"
+  "prettier-atom":
+    formatOnSaveOptions: {}
+    useEslint: true
+  "pull-requests":
+    githubAuthorizationToken: "5e27608888137de47e4c2dff07f69f47a551cac3"
+  "split-diff":
+    diffWords: true
+    ignoreWhitespace: true
+    leftEditorColor: "red"
+    rightEditorColor: "green"
+    scrollSyncType: "Vertical + Horizontal"
+  "tool-bar":
+    position: "Left"
+    visible: false
+  "tree-view":
+    autoReveal: true
+    focusOnReveal: false
+    hideIgnoredNames: true
+    hideVcsIgnoredFiles: true
+  welcome:
+    showOnStartup: false
+<<<<<<< HEAD
+=======
+  whitespace:
+    removeTrailingWhitespace: true
+".diff.source":
+  editor:
+    showInvisibles: true
+".haml.text":
+  editor:
+    preferredLineLength: 130
+".hamlc.text":
+  editor:
+    preferredLineLength: 130
+".slim.text":
+  editor:
+    preferredLineLength: 130
+"linter-rubocop":
+  executablePath: "/Users/chrishough/.rbenv/versions/2.3.3/bin/rubocop"
+>>>>>>> 12c133242a2dda9c2be46d89f8aabbe90d80f9ad

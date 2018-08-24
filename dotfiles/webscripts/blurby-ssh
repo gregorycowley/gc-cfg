@@ -1,0 +1,64 @@
+#!/bin/bash
+current_dir=$(cd `dirname ${BASH_SOURCE[0]}`; pwd)
+DEV_ROOT=$(cd "$current_dir/.."; pwd)
+
+path_to_blurby=$(cd "$DEV_ROOT/blurby"; pwd)
+default_host="app"
+
+usage="
+blurby-ssh [-h][-s <app|vagrant>] [cmd]
+  -h - this help
+  -s - host to ssh into. must have proper ssh setup. defaults to $default_host
+  cmd - passed to ssh
+"
+host=$default_host
+while getopts ":hs:" opt; do
+  case "$opt" in
+    h) echo "$usage"; exit;;
+    s) host="$OPTARG";;
+  esac
+done
+
+cd $path_to_blurby
+
+shift $(( OPTIND - 1 ))
+cmd="$@"
+
+blurby_vm_state_line=$($current_dir/blurby-vm-info "VMState$")
+if ! [[ $blurby_vm_state_line =~ running ]]; then
+  vagrant up
+fi
+
+identity_file_path="$HOME/.ssh/blurby.id_rsa"
+
+ssh_config="Host vagrant
+  HostName 127.0.0.1
+  User vagrant
+  Port 2222
+  UserKnownHostsFile /dev/null
+  StrictHostKeyChecking no
+  PasswordAuthentication no
+  IdentityFile $path_to_blurby/.vagrant/machines/default/virtualbox/private_key
+  IdentitiesOnly yes
+  LogLevel FATAL
+"
+ssh_config="${ssh_config}Host app
+  HostName 127.0.0.1
+  User blurbapp
+  Port 2222
+  UserKnownHostsFile /dev/null
+  StrictHostKeyChecking no
+  PasswordAuthentication no
+  IdentityFile $identity_file_path
+  IdentitiesOnly yes
+  LogLevel FATAL
+"
+ssh_config_path="${TMP:-/tmp}/.blurby-ssh-config"
+echo "$ssh_config" > $ssh_config_path
+
+if ! [[ -e "$identity_file_path" ]]; then
+  ssh -t -F $ssh_config_path vagrant "sudo -u blurbapp cp /home/blurbapp/.ssh/id_rsa /vagrant/.blurby.id_rsa"
+  mv $path_to_blurby/.blurby.id_rsa $identity_file_path
+fi
+chmod 600 $identity_file_path
+ssh -F $ssh_config_path $host "$cmd"

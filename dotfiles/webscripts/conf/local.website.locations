@@ -1,0 +1,11 @@
+include local.website.static-locations.include;
+location = / {
+    root $dev_root/website/_site;
+    try_files /pages/$language_id/pages/homepage.html /pages/homepage.html =404;
+}
+location @website {
+    error_page 404 =200 @adhoc;
+    include access-control.conf;
+    root $dev_root/website/_site;
+    try_files $uri /pages/$language_id$uri /pages$uri /pages/$language_id/pages$uri.html /pages$uri.html =404;
+}

@@ -1,0 +1,53 @@
+#!/bin/sh
+
+gwc () {
+    sed 's/\.//g;s/\(.*\)/\L\1/;s/\ /\n/g' inputFile.txt | sort | uniq -c
+
+}
+
+
+gwordfrequency() {
+  awk '
+     BEGIN { FS="[^a-zA-Z]+" } {
+         for (i=1; i<=NF; i++) {
+             word = tolower($i)
+             words[word]++
+         }
+     }
+     END {
+         for (w in words)
+              printf("%3d %s\n", words[w], w)
+     } ' | sort -rn
+}
+
+# sed -e 's/http:\/\///' -e 's/^www\.//' -e 's/\/..*$//' file |
+# sort | uniq -c |
+# awk '{printf "%s : %s\n", $1, $2}'
+
+# cat your_file.txt | wordfrequency
+
+# find . -name '*.php' | xargs wc -l
+# ( find ./ -name '*.php' -print0 | xargs -0 cat ) | wc -l
+
+# cloc
+# brew install cloc
+
+# cloc --vcs=git
+
+# find -exec grep -v dbsnp {} \; | xargs -n 1 wc
+
+# find path -type f | xargs wc -w | tail -1
+
+# find . -type f -exec wc -w {} \; | awk '{ sum += $1 } END { print sum }'
+
+# find all words from all files within the directory
+# grep -o -h -E -r --include='*.js' --exclude-dir='bower/' --exclude-dir='locales/' '\w+' . | sort -u | \
+# # grep -o -h -E '\w+' ./*|sort -u | \
+# while read word;
+# do
+#         # iterate through each word and find how many files it occurs
+#         c=`grep -l "$word" ./*|wc -l`
+#         echo "$c $word" >> result2.txt;
+# done
+
+# grep -o -h -E -r --include='*.js' --exclude-dir='bower/' --exclude-dir='locales/' '\w+' . | sort -u > result.txt

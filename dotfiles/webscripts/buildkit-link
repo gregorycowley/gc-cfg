@@ -1,0 +1,68 @@
+#!/bin/bash
+current_dir=$(cd `dirname ${BASH_SOURCE[0]}`; pwd)
+DEV_ROOT=$(cd "$current_dir/.."; pwd)
+
+path_to_buildkit=$(cd "$DEV_ROOT/blurb-buildkit"; pwd)
+
+usage="
+buildkit-link [-h][-r] <path_to_bower_assets>
+  -h - this help
+  -r - revert link
+  path_to_bower_assets - the actual assets folder you'd like to be a symlink
+
+This links the build/dist/assets folder to the given bower/buildkit/assets folder
+"
+
+revert=
+while getopts ":hr" opt; do
+  case "$opt" in
+    h) echo "$usage"; exit;;
+    r) revert=true;;
+  esac
+done
+shift $(( OPTIND - 1))
+
+path_to_bower_assets="${1:-}"
+
+if [[ -z "$path_to_bower_assets" ]]; then
+  echo "path_to_bower_assets is required" >&2
+  exit 1
+fi
+
+cd "$path_to_bower_assets"
+path_to_bower_assets="$(pwd)"
+
+path_to_buildkit_assets="$path_to_buildkit/build/dist/assets"
+
+# first prepare buildkit
+function link_to_min {
+  local name="$1"
+  local filename="$name.js"
+  local min_filename="$name.min.js"
+
+  if ! [[ -h "$path_to_buildkit_assets/js/$min_filename" ]]; then
+    [[ -e "$path_to_buildkit_assets/js/$min_filename" ]] && rm "$path_to_buildkit_assets/js/$min_filename"
+    ln -s "$filename" "$path_to_buildkit_assets/js/$min_filename"
+  fi
+}
+link_to_min "main"
+link_to_min "main-eng"
+link_to_min "main-common"
+
+# remove link
+if [[ -h "$path_to_bower_assets" ]]; then
+  rm "$path_to_bower_assets"
+fi
+# restore old
+if [[ -d "$path_to_bower_assets.old" ]]; then
+  mv "$path_to_bower_assets.old" "$path_to_bower_assets"
+fi
+
+[[ "$revert" ]] && exit
+
+# move old
+if [[ -d "$path_to_buildkit_assets" ]]; then
+  mv "$path_to_bower_assets" "$path_to_bower_assets.old"
+fi
+# install link
+ln -s "$path_to_buildkit_assets" "$path_to_bower_assets"

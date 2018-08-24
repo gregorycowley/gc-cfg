@@ -1,0 +1,21 @@
+#!/bin/zsh
+source $HOME/.myconfigurations/workstation/shell/global-settings
+source $HOME/.myconfigurations/workstation/shell/global-helpers
+
+source $HOME/.myconfigurations/workstation/shell/flex-settings
+
+source $HOME/.myconfigurations/workstation/shell/shortcuts/git
+source $HOME/.myconfigurations/workstation/shell/shortcuts/app
+source $HOME/.myconfigurations/workstation/shell/shortcuts/heroku
+source $HOME/.myconfigurations/workstation/shell/shortcuts/keybase
+source $HOME/.myconfigurations/workstation/shell/shortcuts/ror
+source $HOME/.myconfigurations/workstation/shell/shortcuts/docker
+source $HOME/.myconfigurations/workstation/shell/shortcuts/shell
+
+source $HOME/.myconfigurations/workstation/shell/shortcut-help/git
+source $HOME/.myconfigurations/workstation/shell/shortcut-help/app
+source $HOME/.myconfigurations/workstation/shell/shortcut-help/heroku
+source $HOME/.myconfigurations/workstation/shell/shortcut-help/keybase
+source $HOME/.myconfigurations/workstation/shell/shortcut-help/ror
+source $HOME/.myconfigurations/workstation/shell/shortcut-help/docker
+source $HOME/.myconfigurations/workstation/shell/shortcut-help/shell

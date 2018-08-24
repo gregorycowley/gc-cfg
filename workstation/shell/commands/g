@@ -1,0 +1,341 @@
+#!/usr/local/bin/bash
+
+# This command requires z (https://github.com/rupa/z).
+#
+#
+#
+#
+
+# TOOLS=(z)
+
+# # Check whether needed programs are installed
+# for TOOL in ${TOOLS[*]}
+# do
+#     hash $TOOL 2>/dev/null || { echo >&2 "I require $TOOL but it's not installed.  Aborting."; exit 1; }
+# done
+
+function _default {
+  echo "This is greg's machine! Opening" $1
+  # This doesn't work as planned because this script will only
+  # launch new sub-shells instead of modifying the current shell.
+  # For now I'll use z.
+
+  # project=$1
+  # case $project in
+  #   blurby) cd $HOME/Sites/blurb.com/blurby;;
+  #   bookify) cd $HOME/Sites/blurb.com/bookify;;
+  #   reactkit) cd $HOME/Sites/blurb.com/_reactkit;;
+  #   dashboard) cd $HOME/Sites/blurb.com/_blurb-dashboard-react;;
+  #   *) echo "$project is not a valid command" >&2; exit 1;;
+  # esac
+}
+
+function _tmux-setup {
+  SESSION=$USER
+
+  tmux -2 new-session -d -s $SESSION
+
+  # # Setup a window for tailing log files
+  tmux new-window -t $SESSION:1 -n 'Logs'
+  tmux split-window -h
+  tmux select-pane -t 0
+  tmux send-keys "cd ~/Sites/blurb.com/blurby/" C-m
+  tmux send-keys "blurby-start" C-m
+  tmux select-pane -t 1
+  tmux send-keys "cd ~/Sites/blurb.com/_blurb-dashboard-react/" C-m
+  # tmux split-window -v
+  # tmux resize-pane -D 20
+  # tmux send-keys "cd ~/Sites/blurb.com" C-m
+  # # Setup a CoffeeScript compiler/watchdog pane
+  # tmux select-pane -t 0
+  # tmux split-window -v
+  # tmux resize-pane -D 20
+  # tmux send-keys "coffee -o /vagrant/root/static/js/ -cw /vagrant/root/coffee/" C-m
+  #
+  # # Setup a MySQL window
+  # tmux new-window -t $SESSION:2 -n 'MySQL' 'mysql -uroot'
+  #
+  # # Set default window
+  tmux select-window -t $SESSION:1
+  #
+  # # Attach to session
+  tmux -2 attach-session -t $SESSION
+}
+
+function isDirectory {
+  DIR="$1"
+
+  echo "Checking directory " $DIR
+
+  if [ $# -lt 1 ]
+  then
+    echo "Incorrect Usage"
+    exit 3
+
+  elif [ ! -e "$DIR" ]
+  then
+    echo "Directory does not exist!"
+    exit 4
+
+  elif [ ! -d "$DIR" ]
+  then
+    echo "Not a Directory"
+    exit 5
+  else
+    echo "Path is okay"
+
+  fi
+}
+
+function _sort_archive_photos {
+  # Do something...
+  echo "Beginning image to folder sort...";
+
+  # SRC=$2
+  # DST=$3
+  SRC="/Volumes/DroboMax 2 1/Photography/_UNSORTED"
+  DST="/Volumes/DroboMax 2 1/Photography/_SORTED3"
+
+  # Verify src
+  echo "The source dir $SRC"
+  # is this a valid directory?
+  isDirectory "$SRC"
+
+  # Verify dst
+  echo "The destination dir $DST"
+  isDirectory "${DST}"
+
+  echo ""
+  echo "-- Begin..."
+
+  # echo find "$SRC" -type f -print
+
+  #   cdable_vars     off
+  # cdspell         off
+  # checkhash       off
+  # checkwinsize    off
+  # cmdhist         on
+  # compat31        off
+  # dotglob         off
+  # execfail        off
+  # expand_aliases  on
+  # extdebug        off
+  # extglob         off
+  # extquote        on
+  # failglob        off
+  # force_fignore   on
+  # gnu_errfmt      off
+  # histappend      off
+  # histreedit      off
+  # histverify      off
+  # hostcomplete    on
+  # huponexit       off
+  # interactive_comments  on
+  # lithist         off
+  # login_shell     off
+  # mailwarn        off
+  # no_empty_cmd_completion off
+  # nocaseglob      off
+  # nocasematch     off
+  # nullglob        off
+  # progcomp        on
+  # promptvars      on
+  # restricted_shell  off
+  # shift_verbose   off
+  # sourcepath      on
+  # xpg_echo        off
+
+
+  shopt -s dotglob nullglob
+  shopt -s globstar
+  for f in "$SRC"/**/*; do
+    # echo "Processing $f file..."
+    # take action on each file. $f store current file name
+    
+    # Parse file data:
+    # ls -l
+    # stat
+    # file
+    # identify
+
+    if [ -d "$f" ]; then
+      echo "Skipping folder $f"
+      continue
+    fi
+
+
+    # stat -t "%Y%m%e" "$f" | awk '{ print $10 }'
+    # stat "$f"
+
+    DATENAME=$(stat -f "%Sm %N" -t "%Y %m %e" "$f")
+    IFS=" " read -r year month day filepath <<< "$DATENAME"
+    imagefile=$(basename "$filepath")
+    imagedir=$(dirname "$filepath")
+
+    # echo "$DATENAME"
+
+    if [ ! -d "$filepath" ]; then
+      # Don't touch folders
+      # Create a destination path:
+      destDir="${DST}/$year/$month"
+      if [ ! -d "$destDir" ]; then
+        mkdir -pv "$destDir"
+      fi
+
+      # echo "-- Moving file to $destDir/$imagefile"
+      if [ -f "$filepath" ]; then
+        echo "-- File exists $filepath"
+        IFS='.' read -r filename extention <<< "$imagefile"
+        ran=$(md5 <<< "$filename")
+        mv -nv "$filepath" "$destDir/$filename-$ran.$extention"
+        #echo "--- Making new file $imagedir/$filename-$ran.$extention"
+      else
+        mv -nv "$filepath" "$destDir"
+      fi
+      
+
+    fi
+
+
+    # find filenname -maxdepth 0 -printf "%TY-%Tm-%Td %TH:%TM\n"
+    # awk '{ "stat " $1 print }'
+    #     OUTPUT="$(ls -1)"
+    # echo "${OUTPUT}"
+    # var1=$(echo $STR | cut -f1 -d-)
+    # var2=$(echo $STR | cut -f2 -d-)
+    # 
+  done
+  # Begin iterating through src files
+
+  # For each file:
+  #   Image
+  #   Folder
+  #   Video
+  #   Other
+
+
+
+  # Creation Date
+  # Mime-type
+  # file size
+  # pixel dimensions
+
+  # Does this file have metadata?
+  # What does this file have and what is available to image and media files?
+
+  # For sorting images into folders:
+
+  # Look for common file name patterns
+  # XXX.MOV
+  # IMG_XXX.jpg
+  # YYYYMMDD_name_index(.cr2|.jpg|.nef|.dng)
+  # LR.lrcat
+  # cImage_22067.png
+  # 100_0014.JPG
+  # 20050901a_thesak_0201.jpg
+  # BDineva-StoyanComputer-057-p1 - Version 4.jpg
+  # rsingh_671-p1 - Version 2.jpg
+  # 2017-04-27 15.07.59.jpg
+  # Handle extention variations jpg|JPG|JPEG|jpeg
+}
+
+function _reset_modem {
+  echo "Resetting modem"
+  # Using curl
+  # -----------------------------------------------------------
+  # curl -d Rebooting=1 http://10.0.0.1/goform/RgConfiguration
+
+
+  # Using wget
+  # -----------------------------------------------------------
+  # wget --quiet -O /dev/null --post-data=Rebooting=1 http://10.0.0.1/goform/RgConfiguration
+
+
+  # Using HTTP:Tiny Perl module (one liner version)
+  # -----------------------------------------------------------
+  # perl -MHTTP::Tiny -E 'HTTP::Tiny->new->post_form("http://192.168.100.1/goform/RgConfiguration", { Rebooting => 1 })'
+
+
+  # Using HTTP:Tiny Perl module in a script
+  # -----------------------------------------------------------
+  #!/usr/bin/perl
+
+  # use strict;
+  # use warnings;
+  # use HTTP::Tiny;
+
+  # my $url       = 'http://192.168.100.1/goform/RgConfiguration';
+  # my $form_data = { Rebooting => 1 };
+  # my $http      = HTTP::Tiny->new;
+  # my $response  = $http->post_form($url, $form_data);
+
+  # if ( $response->{success} ) {
+  #     print "Modem rebooted\n";
+  # }
+  # else {
+  #     print "Reboot failed: ", $response->{reason}, "\n";
+  # }
+
+  # <form action="/goform/login" method="post" name="login" id="login" >
+  # <input id="id_challenge" type="hidden" name="loginChallenge" size="32" value="nHganLJdLgGF31FF9DxZWPD8DsC5ADzJ" />
+  # <input id="id_username"  name="loginUsername" size="25" value="""" />
+
+  # <input type="submit" value="Reboot" align="middle" onClick="resetReq();">
+  # <input type="hidden" name="Rebooting" value= 0 >
+  # <form action="/goform/RgConfiguration.pl" method="post" name="RgConfiguration"><table><tr><td>
+  # <input type="hidden" name="GetNonce" size=31 value=hJzv5fpGEfFV2aPkucocu9vsLBkjJLB> </td></tr></table>
+
+
+}
+
+function _analyze_text {
+  echo "Analyzing text in $2"
+  IN_FILE=$2
+  echo $IN_FILE
+  tr -sc "[A-Z][a-z][0-9]'" '[\012*]' < "$IN_FILE" | \
+  tr '[A-Z]' '[a-z]' | \
+  sort | uniq -c | sort -nr 
+  # | \
+  # head -n1000  
+}
+
+function _flatten {
+  find */ -type f -exec bash -c 'file=${1#./}; mv "$file" "${file//\//_}"' _ '{}' \;
+}
+
+function _line_by_line {
+  echo "reading $2 line by line"
+  input="/path/to/txt/file"
+  while IFS= read -r var
+  do
+    echo "--$var"
+  done < "$input
+}
+
+usage="
+g [-h][t|tmux]
+-h                  - this help
+t   | tmux          - start tmux session for the Blurby/React Dashboard
+x   | experiment    - a place to work on scipts
+r   | reset-net    - a place to work on scipts
+"
+while getopts ":h" opt; do
+  case "$opt" in
+    h) echo "$usage"; exit;;
+  esac
+done
+shift $(( OPTIND - 1 ))
+
+cmd=${1:-start}
+case $cmd in
+  start) _default "$@";;
+  at|analyze-text) _analyze_text "$@";;
+  t|tmux) _tmux-setup;;
+  x|experiment) _sort_archive_photos "$@";;
+  r|reset-net) _reset_modem;;
+  f|flatten) _flatten;;
+  l|read) _line_by_line "$@";; 
+  -h|--help|help) echo "$usage";;
+  *) echo "$cmd is not a valid command" >&2; exit 1;;
+  # *) _default $1;;
+esac

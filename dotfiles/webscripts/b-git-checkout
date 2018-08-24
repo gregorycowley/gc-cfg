@@ -1,0 +1,8 @@
+#!/bin/bash -eu
+set -o pipefail
+
+# Basically, I want to create an issue from a jira link or number (preferably number with autocomplete)
+# convert the summary to the right format, and create the branch in the current repo
+# (so in the end I just want to call `git checkout -b $name`...so this could just checkout things too, which is cool)
+current_dir="$(cd `dirname ${BASH_SOURCE[0]}`; pwd)"
+node "$current_dir/js/b-git-checkout.js" "$@"

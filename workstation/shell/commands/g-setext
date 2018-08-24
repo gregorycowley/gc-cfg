@@ -1,0 +1,7 @@
+#!/bin/bash
+for file in *
+do
+    mime=$(file --brief --mime-type "$file" | tr '/' '_')
+    mkdir -p "$mime"
+    mv "$file" "$mime/$file"
+done

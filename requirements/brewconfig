@@ -1,0 +1,18 @@
+HOMEBREW_VERSION: 1.6.9
+ORIGIN: https://github.com/Homebrew/brew
+HEAD: c814199a791867ab75f90a22715e2475706b13d8
+Last commit: 8 days ago
+Core tap ORIGIN: https://github.com/Homebrew/homebrew-core
+Core tap HEAD: 53017939777618e9c8b3c16c4083c6c88fc81212
+Core tap last commit: 5 days ago
+HOMEBREW_PREFIX: /usr/local
+CPU: octa-core 64-bit haswell
+Homebrew Ruby: 2.3.3 => /System/Library/Frameworks/Ruby.framework/Versions/2.3/usr/bin/ruby
+Clang: 9.1 build 902
+Git: 2.17.0 => /usr/local/bin/git
+Curl: 7.54.0 => /usr/bin/curl
+Java: 10.0.1, 1.8.0_171
+macOS: 10.13.5-x86_64
+CLT: 9.4.1.0.1.1528165917
+Xcode: 9.4
+XQuartz: N/A

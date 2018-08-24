@@ -1,0 +1,102 @@
+#!/bin/bash
+
+function _default {
+	shopt -s nullglob
+
+	for f in *.jpg *.gif; do
+	    a=$(identify -format '%[fx:w<800 && h<800]' "$f") || continue
+	    if [[ $a = 1 ]]; then
+	        echo rm -v -- "$f"
+	    fi
+	done
+}
+
+function _sync_timemachine {
+	
+	# SRC="/Volumes/DroboMax 2 1/_Move/Old-Backups.backupdb/Blurb-GCowley"
+	SRC="/Volumes/gPhoto2tb/TMFlattened/gcowley"
+
+	#2016-06-20-095151
+	#/Macintosh\ HD/Users 
+	DST="/Volumes/gPhoto2tb/TMFlattened/Users"
+
+	# Files in folder as array (shopt -s nullglob)
+	arr=("$SRC"/*)
+	# files=$( ls * )
+
+	# Get array Element at index and set it to the source path
+
+	# echo ${arr[1]}
+
+	INDEX=6
+
+	for ((INDEX=6; INDEX<=31; INDEX++)); do
+
+		SRC_SELECT="${arr[$INDEX]}/Macintosh HD/Users/"
+		echo "-- Synching $SRC_SELECT"
+
+		# for f in "${arr[@]}"; do
+		#    echo "$f"
+		# done
+
+		# counter=0
+		# for i in $files ; do
+		#   echo Next: $i
+		#   let counter=$counter+1
+		#   echo $counter
+		# done
+
+		# Use OPT or OPT1 for level 1 output, OPT2 for level 2, etc.; OPT0 silences.
+
+		# BACKUP     Mention files backed up
+		# COPY       Mention files copied locally on the receiving side
+		# DEL        Mention deletions on the receiving side
+		# FLIST      Mention file-list receiving/sending (levels 1-2)
+		# MISC       Mention miscellaneous information (levels 1-2)
+		# MOUNT      Mention mounts that were found or skipped
+		# NAME       Mention 1) updated file/dir names, 2) unchanged names
+		# PROGRESS   Mention 1) per-file progress or 2) total transfer progress
+		# REMOVE     Mention files removed on the sending side
+		# SKIP       Mention files that are skipped due to options used
+		# STATS      Mention statistics at end of run (levels 1-3)
+		# SYMSAFE    Mention symlinks that are unsafe
+
+		# ALL        Set all --info options (e.g. all4)
+		# NONE       Silence all --info options (same as all0)
+		# HELP       Output this help message
+
+		# Options added for each increase in verbose level:
+		# 1) COPY,DEL,FLIST,MISC,NAME,STATS,SYMSAFE
+		# 2) BACKUP,MISC2,MOUNT,NAME2,REMOVE,SKIP
+
+		rsync -rav --info=COPY,DEL,BACKUP,PROGRESS2 --ignore-existing "$SRC_SELECT" "$DST"
+
+		# rsync -rav --info=COPY,DEL,BACKUP,PROGRESS2 --ignore-existing "/Volumes/gPhoto2tb/TMFlattened/gcowley" "/Volumes/gPhoto2tb/TMFlattened/Users"
+		# rsync -rai -P --stats --ignore-existing --exclude "Dropbox (Blurb)/" "$SOURCE_PATH$1Macintosh HD/Users" "$DEST_PATH"
+	done 
+}
+
+
+
+usage="
+g [-h][t|tmux]
+-h                  - this help
+t   | tmux          - start tmux session for the Blurby/React Dashboard
+s   | sync 			- use rsync
+"
+while getopts ":h" opt; do
+  case "$opt" in
+    h) echo "$usage"; exit;;
+  esac
+done
+shift $(( OPTIND - 1 ))
+
+cmd=${1:-start}
+case $cmd in
+  start) _default "$@";;
+  t|tmux) _tmux-setup;;
+  s|sync) _sync_timemachine;;
+  -h|--help|help) echo "$usage";;
+  *) echo "$cmd is not a valid command" >&2; exit 1;;
+  # *) _default $1;;
+esac

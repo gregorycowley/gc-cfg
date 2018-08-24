@@ -1,0 +1,19 @@
+# script/console shortcut
+#
+# Works with rails 1.x through 4.x, with and without spring in the latter case
+#
+# function sc () {
+  if [[ -e "script/console" ]]
+  then
+    # 1.x, 2.x
+    script/console $*
+  else
+    # 3.x, 4.x
+    if springing
+    then
+      bundle exec spring rails console $*
+    else
+      bundle exec rails console $*
+    fi
+  fi
+# }
